@@ -55,6 +55,9 @@
                 <a href="#" onclick="switchTab('pos')" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-slate-800 hover:text-white transition-colors" data-tab="pos">
                     <i class="fa-solid fa-cash-register w-5"></i> পণ্য বিক্রি (POS)
                 </a>
+                <a href="#" onclick="switchTab('sales-history')" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-slate-800 hover:text-white transition-colors" data-tab="sales-history">
+                    <i class="fa-solid fa-receipt w-5"></i> বিক্রয় ইতিহাস ও মেমো
+                </a>
                 <a href="#" onclick="switchTab('products')" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-slate-800 hover:text-white transition-colors" data-tab="products">
                     <i class="fa-solid fa-boxes-stacked w-5"></i> পণ্য ব্যবস্থাপনা
                 </a>
@@ -155,7 +158,7 @@
                                         <tr class="bg-slate-50 border-b border-slate-200 text-slate-600">
                                             <th class="p-3">ইনভয়েস</th>
                                             <th class="p-3">তারিখ ও সময়</th>
-                                            <th class="p-3">আইটেম</th>
+                                            <th class="p-3">গ্রাহক</th>
                                             <th class="p-3">মোট টাকা</th>
                                             <th class="p-3">অবস্থা</th>
                                         </tr>
@@ -178,12 +181,12 @@
                                         <span class="flex items-center gap-2"><i class="fa-solid fa-cart-shopping"></i> নতুন বিক্রি শুরু করুন</span>
                                         <i class="fa-solid fa-chevron-right text-xs"></i>
                                     </button>
-                                    <button onclick="switchTab('products')" class="w-full flex items-center justify-between p-3 rounded-lg bg-blue-50 hover:bg-blue-100 text-blue-700 font-medium transition-colors">
-                                        <span class="flex items-center gap-2"><i class="fa-solid fa-plus"></i> নতুন পণ্য যোগ করুন</span>
+                                    <button onclick="switchTab('sales-history')" class="w-full flex items-center justify-between p-3 rounded-lg bg-purple-50 hover:bg-purple-100 text-purple-700 font-medium transition-colors">
+                                        <span class="flex items-center gap-2"><i class="fa-solid fa-receipt"></i> বিক্রয় ইতিহাস ও হোয়াটসঅ্যাপ মেমো</span>
                                         <i class="fa-solid fa-chevron-right text-xs"></i>
                                     </button>
-                                    <button onclick="switchTab('purchase')" class="w-full flex items-center justify-between p-3 rounded-lg bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-medium transition-colors">
-                                        <span class="flex items-center gap-2"><i class="fa-solid fa-truck"></i> পাইকারি মাল এন্ট্রি</span>
+                                    <button onclick="switchTab('products')" class="w-full flex items-center justify-between p-3 rounded-lg bg-blue-50 hover:bg-blue-100 text-blue-700 font-medium transition-colors">
+                                        <span class="flex items-center gap-2"><i class="fa-solid fa-plus"></i> নতুন পণ্য যোগ করুন</span>
                                         <i class="fa-solid fa-chevron-right text-xs"></i>
                                     </button>
                                     <button onclick="switchTab('dues')" class="w-full flex items-center justify-between p-3 rounded-lg bg-amber-50 hover:bg-amber-100 text-amber-700 font-medium transition-colors">
@@ -193,7 +196,7 @@
                                 </div>
                             </div>
                             <div class="mt-6 pt-4 border-t border-slate-100 text-center">
-                                <p class="text-xs text-slate-400">মুদি দোকান ম্যানেজমেন্ট সিস্টেম ভার্সন ১.০</p>
+                                <p class="text-xs text-slate-400">মুদি দোকান ম্যানেজমেন্ট সিস্টেম ভার্সন ২.০</p>
                             </div>
                         </div>
                     </div>
@@ -225,34 +228,74 @@
                                     <span><i class="fa-solid fa-cart-shopping text-emerald-600"></i> বর্তমান কার্ট</span>
                                     <button onclick="clearCart()" class="text-xs text-rose-600 hover:text-rose-800 font-medium">সব মুছুন</button>
                                 </h3>
-                                <div id="cartItemsList" class="divide-y divide-slate-100 overflow-y-auto max-h-[calc(100vh-380px)] pr-1 mb-4">
+                                <div id="cartItemsList" class="divide-y divide-slate-100 overflow-y-auto max-h-[calc(100vh-420px)] pr-1 mb-4 space-y-2">
                                     <p class="text-center text-slate-400 py-8 text-sm">কার্টে কোনো পণ্য নেই</p>
                                 </div>
                             </div>
-                            <div class="border-t border-slate-200 pt-4 space-y-3">
-                                <div class="space-y-1.5 text-sm">
+                            <div class="border-t border-slate-200 pt-3 space-y-2.5">
+                                <div class="space-y-1 text-sm">
                                     <div class="flex justify-between text-slate-600">
                                         <span>উপমোট:</span>
                                         <span id="cartSubtotal">৳ ০.০০</span>
                                     </div>
                                     <div class="flex justify-between items-center text-slate-600">
                                         <span>ডিসকাউন্ট:</span>
-                                        <input type="number" id="cartDiscount" value="0" oninput="calculateCartTotal()" class="w-20 px-2 py-1 border border-slate-300 rounded text-right text-sm">
+                                        <input type="number" id="cartDiscount" value="0" oninput="calculateCartTotal()" class="w-20 px-2 py-1 border border-slate-300 rounded text-right text-sm focus:outline-none focus:border-emerald-500">
                                     </div>
-                                    <div class="flex justify-between font-bold text-base text-slate-800 pt-2 border-t border-slate-100">
+                                    <div class="flex justify-between font-bold text-base text-slate-800 pt-1.5 border-t border-slate-100">
                                         <span>সর্বমোট:</span>
                                         <span id="cartGrandTotal" class="text-emerald-600">৳ ০.০০</span>
                                     </div>
                                 </div>
-                                <div>
-                                    <label class="block text-xs font-medium text-slate-600 mb-1">গ্রাহকের নাম (বাকি বিক্রির জন্য)</label>
-                                    <input type="text" id="customerName" placeholder="সাধারণ গ্রাহক" class="w-full px-3 py-1.5 border border-slate-300 rounded-lg text-sm focus:outline-none focus:border-emerald-500">
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                                    <div>
+                                        <label class="block text-xs font-medium text-slate-600 mb-0.5">গ্রাহকের নাম</label>
+                                        <input type="text" id="customerName" placeholder="সাধারণ গ্রাহক" class="w-full px-2.5 py-1.5 border border-slate-300 rounded-lg text-sm focus:outline-none focus:border-emerald-500">
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs font-medium text-slate-600 mb-0.5">মোবাইল নম্বর (হোয়াটসঅ্যাপ)</label>
+                                        <input type="text" id="customerPhone" placeholder="01700000000" class="w-full px-2.5 py-1.5 border border-slate-300 rounded-lg text-sm focus:outline-none focus:border-emerald-500">
+                                    </div>
                                 </div>
-                                <div class="grid grid-cols-2 gap-2 pt-2">
-                                    <button onclick="completeSale('cash')" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-medium py-2.5 rounded-lg text-sm transition-colors shadow-sm">নগদ বিক্রি</button>
-                                    <button onclick="completeSale('due')" class="w-full bg-amber-600 hover:bg-amber-700 text-white font-medium py-2.5 rounded-lg text-sm transition-colors shadow-sm">বাকি বিক্রি</button>
+                                <div class="grid grid-cols-2 gap-2 pt-1">
+                                    <button onclick="completeSale('cash')" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-medium py-2 rounded-lg text-sm transition-colors shadow-sm">নগদ বিক্রি</button>
+                                    <button onclick="completeSale('due')" class="w-full bg-amber-600 hover:bg-amber-700 text-white font-medium py-2 rounded-lg text-sm transition-colors shadow-sm">বাকি বিক্রি</button>
                                 </div>
                             </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 2.1 SALES HISTORY & WHATSAPP MEMO TAB -->
+                <div id="tab-sales-history" class="tab-content hidden space-y-6">
+                    <div class="bg-white rounded-xl border border-slate-200 p-5 shadow-sm">
+                        <div class="flex flex-col sm:flex-row justify-between items-center gap-4 mb-6">
+                            <h3 class="text-lg font-bold text-slate-800 flex items-center gap-2">
+                                <i class="fa-solid fa-receipt text-emerald-600"></i> বিক্রয় ইতিহাস ও হোয়াটসঅ্যাপ ইনভয়েস
+                            </h3>
+                            <div class="relative w-full sm:w-72">
+                                <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400"><i class="fa-solid fa-search"></i></span>
+                                <input type="text" id="searchSalesHistoryInput" onkeyup="filterSalesHistory()" placeholder="গ্রাহকের নাম বা ফোন দিয়ে খুঁজুন..." class="w-full pl-10 pr-4 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:border-emerald-500">
+                            </div>
+                        </div>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left border-collapse text-sm">
+                                <thead>
+                                    <tr class="bg-slate-50 border-b border-slate-200 text-slate-600">
+                                        <th class="p-3">ইনভয়েস ID</th>
+                                        <th class="p-3">তারিখ ও সময়</th>
+                                        <th class="p-3">গ্রাহকের নাম</th>
+                                        <th class="p-3">মোবাইল নম্বর</th>
+                                        <th class="p-3">পণ্য বিবরণ</th>
+                                        <th class="p-3">মোট বিল</th>
+                                        <th class="p-3">ধরন</th>
+                                        <th class="p-3 text-center">হোয়াটসঅ্যাপ</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="salesHistoryTableBody" class="divide-y divide-slate-100">
+                                    <!-- Dynamic rows -->
+                                </tbody>
+                            </table>
                         </div>
                     </div>
                 </div>
@@ -632,6 +675,7 @@
             const titles = {
                 dashboard: 'ড্যাশবোর্ড ওভারভিউ',
                 pos: 'পণ্য বিক্রি (POS টার্মিনাল)',
+                'sales-history': 'বিক্রয় ইতিহাস ও হোয়াটসঅ্যাপ মেমো',
                 products: 'পণ্য ব্যবস্থাপনা ও স্টক',
                 purchase: 'পাইকারি মাল ক্রয় হিসাব',
                 dues: 'বাকি ব্যবস্থাপনা ও খাতা',
@@ -645,6 +689,7 @@
             // Trigger Specific Renders
             if(tabId === 'dashboard') renderDashboard();
             if(tabId === 'pos') renderPOSProducts();
+            if(tabId === 'sales-history') renderSalesHistory();
             if(tabId === 'products') renderProductsTable();
             if(tabId === 'purchase') { renderPurchaseFormDropdown(); renderPurchasesTable(); }
             if(tabId === 'dues') renderDuesTables();
@@ -702,7 +747,7 @@
                     <tr class="hover:bg-slate-50">
                         <td class="p-3 font-medium text-slate-700">#INV-${sale.id}</td>
                         <td class="p-3 text-slate-500">${new Date(sale.date).toLocaleTimeString('bn-BD')}</td>
-                        <td class="p-3">${sale.items.length} টি পণ্য</td>
+                        <td class="p-3 font-medium text-slate-800">${sale.customer}</td>
                         <td class="p-3 font-bold text-emerald-600">৳ ${sale.grandTotal}</td>
                         <td class="p-3"><span class="px-2 py-1 text-xs rounded-full ${sale.type === 'cash' ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'}">${sale.type === 'cash' ? 'নগদ' : 'বাকি'}</span></td>
                     </tr>
@@ -769,20 +814,30 @@
             renderCart();
         }
 
+        // Updated Render Cart with Price & Quantity Customization
         function renderCart() {
             let html = '';
             let subtotal = 0;
             cart.forEach((item, index) => {
                 subtotal += item.price * item.qty;
                 html += `
-                    <div class="py-2 flex items-center justify-between text-sm">
-                        <div>
-                            <p class="font-medium text-slate-800">${item.name}</p>
-                            <p class="text-xs text-slate-500">৳ ${item.price} × ${item.qty}</p>
-                        </div>
-                        <div class="flex items-center gap-2">
-                            <span class="font-bold text-slate-700">৳ ${item.price * item.qty}</span>
+                    <div class="p-2.5 bg-slate-50 border border-slate-200 rounded-lg space-y-2">
+                        <div class="flex items-center justify-between">
+                            <p class="font-bold text-slate-800 text-sm">${item.name}</p>
                             <button onclick="removeFromCart(${index})" class="text-rose-500 hover:text-rose-700 p-1"><i class="fa-solid fa-trash text-xs"></i></button>
+                        </div>
+                        <div class="flex items-center justify-between gap-2 text-xs">
+                            <div class="flex items-center gap-1">
+                                <span class="text-slate-500">দাম:৳</span>
+                                <input type="number" min="0" value="${item.price}" onchange="updateCartItemPrice(${index}, this.value)" class="w-16 px-1.5 py-0.5 border border-slate-300 rounded text-right font-medium focus:outline-none focus:border-emerald-500">
+                            </div>
+                            <div class="flex items-center gap-1">
+                                <span class="text-slate-500">পরিমাণ:</span>
+                                <input type="number" min="1" value="${item.qty}" onchange="updateCartItemQty(${index}, this.value)" class="w-14 px-1.5 py-0.5 border border-slate-300 rounded text-center font-medium focus:outline-none focus:border-emerald-500">
+                            </div>
+                            <div class="font-bold text-slate-700 text-sm">
+                                ৳ ${(item.price * item.qty)}
+                            </div>
                         </div>
                     </div>
                 `;
@@ -790,6 +845,28 @@
             document.getElementById('cartItemsList').innerHTML = html || `<p class="text-center text-slate-400 py-8 text-sm">কার্টে কোনো পণ্য নেই</p>`;
             document.getElementById('cartSubtotal').innerText = `৳ ${subtotal}`;
             calculateCartTotal();
+        }
+
+        function updateCartItemPrice(index, newPrice) {
+            let val = parseFloat(newPrice);
+            if(val >= 0) {
+                cart[index].price = val;
+                renderCart();
+            }
+        }
+
+        function updateCartItemQty(index, newQty) {
+            let val = parseInt(newQty);
+            let prod = db.products.find(p => p.id === cart[index].id);
+            if(val > 0) {
+                if(prod && val <= prod.stock) {
+                    cart[index].qty = val;
+                } else {
+                    alert('স্টকে পর্যাপ্ত পণ্য নেই!');
+                    cart[index].qty = prod ? prod.stock : 1;
+                }
+                renderCart();
+            }
         }
 
         function removeFromCart(index) {
@@ -818,6 +895,7 @@
             let discount = parseFloat(document.getElementById('cartDiscount').value) || 0;
             let grandTotal = Math.max(0, subtotal - discount);
             let customer = document.getElementById('customerName').value.trim() || 'সাধারণ গ্রাহক';
+            let customerPhone = document.getElementById('customerPhone').value.trim() || '';
 
             let profit = cart.reduce((sum, item) => sum + ((item.price - item.buyPrice) * item.qty), 0) - discount;
 
@@ -836,18 +914,93 @@
                 id: Date.now().toString().slice(-6),
                 date: new Date().toISOString(),
                 items: [...cart],
-                subtotal, discount, grandTotal, type, customer, profit
+                subtotal, discount, grandTotal, type, customer, customerPhone, profit
             };
 
             db.sales.push(saleRecord);
             saveDB();
 
-            alert('বিক্রি সফলভাবে সম্পন্ন হয়েছে!');
+            if(confirm('বিক্রি সফলভাবে সম্পন্ন হয়েছে! আপনি কি কাস্টমারকে হোয়াটসঅ্যাপে মেমো পাঠাতে চান?')) {
+                sendWhatsAppMemo(saleRecord);
+            }
+
             cart = [];
             document.getElementById('customerName').value = '';
+            document.getElementById('customerPhone').value = '';
             document.getElementById('cartDiscount').value = '0';
             renderCart();
             renderPOSProducts();
+        }
+
+        // WhatsApp Memo Sender Function
+        function sendWhatsAppMemo(sale) {
+            let phone = sale.customerPhone ? sale.customerPhone.replace(/[^0-9]/g, '') : '';
+            if(phone.length === 11 && phone.startsWith('01')) {
+                phone = '88' + phone;
+            }
+
+            let memoText = `🛍️ *${db.settings.shopName}*\n`;
+            memoText += `📍 ${db.settings.shopAddress} | 📞 ${db.settings.shopPhone}\n`;
+            memoText += `------------------------------\n`;
+            memoText += `📄 *মেমো/ইনভয়েস:* #INV-${sale.id}\n`;
+            memoText += `📅 *তারিখ:* ${new Date(sale.date).toLocaleDateString('bn-BD')} ${new Date(sale.date).toLocaleTimeString('bn-BD')}\n`;
+            memoText += `👤 *গ্রাহক:* ${sale.customer}\n`;
+            memoText += `------------------------------\n`;
+            memoText += `*ক্রয়কৃত পণ্যসমূহ:*\n`;
+
+            sale.items.forEach((item, index) => {
+                memoText += `${index + 1}. ${item.name} - ${item.qty} টি × ৳${item.price} = ৳${item.qty * item.price}\n`;
+            });
+
+            memoText += `------------------------------\n`;
+            memoText += `উপমোট: ৳${sale.subtotal}\n`;
+            if(sale.discount > 0) memoText += `ডিসকাউন্ট: ৳${sale.discount}\n`;
+            memoText += `*সর্বমোট:* ৳${sale.grandTotal}\n`;
+            memoText += `পরিশোধের ধরন: ${sale.type === 'cash' ? 'নগদ' : 'বাকি'}\n\n`;
+            memoText += `ধন্যবাদ, আবার আসবেন! 🙏`;
+
+            let url = `https://wa.me/${phone}?text=${encodeURIComponent(memoText)}`;
+            window.open(url, '_blank');
+        }
+
+        // 2.1 Sales History Render & Search
+        function renderSalesHistory() {
+            let sales = [...db.sales].reverse();
+            renderSalesHistoryTable(sales);
+        }
+
+        function filterSalesHistory() {
+            let query = document.getElementById('searchSalesHistoryInput').value.toLowerCase();
+            let filtered = db.sales.filter(s => 
+                (s.customer && s.customer.toLowerCase().includes(query)) || 
+                (s.customerPhone && s.customerPhone.includes(query)) ||
+                (s.id && s.id.includes(query))
+            ).reverse();
+            renderSalesHistoryTable(filtered);
+        }
+
+        function renderSalesHistoryTable(sales) {
+            let html = '';
+            sales.forEach(sale => {
+                let itemsList = sale.items.map(i => `${i.name} (${i.qty})`).join(', ');
+                html += `
+                    <tr class="hover:bg-slate-50">
+                        <td class="p-3 font-medium text-slate-700">#INV-${sale.id}</td>
+                        <td class="p-3 text-slate-500 text-xs">${new Date(sale.date).toLocaleDateString('bn-BD')}<br>${new Date(sale.date).toLocaleTimeString('bn-BD')}</td>
+                        <td class="p-3 font-bold text-slate-800">${sale.customer}</td>
+                        <td class="p-3 text-slate-600">${sale.customerPhone || 'প্রযোজ্য নয়'}</td>
+                        <td class="p-3 text-xs text-slate-600 max-w-xs truncate" title="${itemsList}">${itemsList}</td>
+                        <td class="p-3 font-bold text-emerald-600">৳ ${sale.grandTotal}</td>
+                        <td class="p-3"><span class="px-2 py-1 text-xs rounded-full ${sale.type === 'cash' ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'}">${sale.type === 'cash' ? 'নগদ' : 'বাকি'}</span></td>
+                        <td class="p-3 text-center">
+                            <button onclick='sendWhatsAppMemo(${JSON.stringify(sale)})' class="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded text-xs flex items-center gap-1 shadow-sm mx-auto">
+                                <i class="fa-brands fa-whatsapp text-sm"></i> মেমো পাঠান
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            });
+            document.getElementById('salesHistoryTableBody').innerHTML = html || `<tr><td colspan="8" class="text-center text-slate-400 py-4">কোনো বিক্রয়ের ইতিহাস পাওয়া যায়নি</td></tr>`;
         }
 
         // 3. Products Management
