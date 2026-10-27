@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Smart Dokan Manager</title>
     <link rel="stylesheet" href="style.css">
-    <!-- Font Awesome Icons for Mobile Friendly UI -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
@@ -15,8 +14,8 @@
         <div class="logo-area">
             <i class="fa-solid fa-store logo-icon"></i>
             <div>
-                <h1>Smart Dokan Manager</h1>
-                <p class="subtitle">স্মার্ট মুদি দোকান ম্যানেজমেন্ট</p>
+                <h1 id="headerShopName">Smart Dokan Manager</h1>
+                <p class="subtitle" id="headerShopSub">স্মার্ট মুদি দোকান ম্যানেজমেন্ট</p>
             </div>
         </div>
         <button class="mobile-menu-btn" id="menuToggleBtn" onclick="toggleSidebar()">
@@ -36,14 +35,14 @@
                 <a href="#" class="nav-item" onclick="switchTab('customers-tab', this)"><i class="fa-solid fa-users"></i> কাস্টমার ও বাকি</a>
                 <a href="#" class="nav-item" onclick="switchTab('expenses-tab', this)"><i class="fa-solid fa-wallet"></i> খরচ</a>
                 <a href="#" class="nav-item" onclick="switchTab('reports-tab', this)"><i class="fa-solid fa-chart-pie"></i> রিপোর্ট</a>
-                <a href="#" class="nav-item" onclick="switchTab('settings-tab', this)"><i class="fa-solid fa-gear"></i> সেটিংস</a>
+                <a href="#" class="nav-item" onclick="switchTab('settings-tab', this)"><i class="fa-solid fa-gear"></i> সেটিংস ও ব্যাকআপ</a>
             </nav>
         </aside>
 
         <!-- Main Content Area -->
         <main class="main-content">
 
-            <!-- SALES / INVOICE SECTION ( core feature ) -->
+            <!-- 1. SALES & DRAFT INVOICE SECTION -->
             <section id="sales-tab" class="tab-content active">
                 <div class="section-header">
                     <h2><i class="fa-solid fa-cash-register"></i> নতুন বিক্রয় / চালান তৈরি</h2>
@@ -52,38 +51,24 @@
                     </button>
                 </div>
 
-                <!-- Draft Tabs for Multiple Customers -->
-                <div class="draft-tabs-container" id="draftTabsContainer">
-                    <!-- Dynamic Draft Tabs will appear here -->
-                </div>
+                <div class="draft-tabs-container" id="draftTabsContainer"></div>
 
-                <!-- Invoice Workspace Grid -->
                 <div class="pos-grid">
-                    
-                    <!-- Left Column: Product Selection Catalog -->
                     <div class="pos-card product-catalog-card">
                         <h3><i class="fa-solid fa-list-check"></i> পণ্য নির্বাচন করুন</h3>
-                        
-                        <!-- Search Box -->
                         <div class="search-box">
                             <i class="fa-solid fa-magnifying-glass"></i>
-                            <input type="text" id="productSearchInput" placeholder="পণ্যের নাম দিয়ে খুঁজুন..." oninput="filterProducts()">
+                            <input type="text" id="productSearchInput" placeholder="পণ্যের নাম দিয়ে খুঁজুন..." oninput="filterProductsCatalog()">
                         </div>
-
-                        <!-- Sample Products List Grid -->
-                        <div class="products-grid" id="productsGrid">
-                            <!-- Populated via JavaScript -->
-                        </div>
+                        <div class="products-grid" id="productsCatalogGrid"></div>
                     </div>
 
-                    <!-- Right Column: Current Active Invoice Details -->
                     <div class="pos-card invoice-details-card">
                         <div class="invoice-header-info">
                             <span class="badge" id="activeInvoiceNo">চালান #INV-1001</span>
                             <span class="badge badge-warning" id="activeInvoiceStatus">ড্রাফট (Draft)</span>
                         </div>
 
-                        <!-- Customer Input Fields -->
                         <div class="customer-form">
                             <div class="form-group">
                                 <label><i class="fa-solid fa-user"></i> কাস্টমারের নাম:</label>
@@ -95,33 +80,29 @@
                             </div>
                         </div>
 
-                        <!-- Selected Items Table -->
                         <div class="table-responsive">
                             <table class="items-table">
                                 <thead>
                                     <tr>
                                         <th>পণ্য</th>
                                         <th>মূল্য</th>
-                                        <th style="width: 110px;">পরিমাণ</th>
+                                        <th style="width: 100px;">পরিমাণ</th>
                                         <th>একক</th>
                                         <th>মোট</th>
                                         <th>#</th>
                                     </tr>
                                 </thead>
-                                <tbody id="invoiceItemsTable">
-                                    <!-- Dynamic Items -->
-                                </tbody>
+                                <tbody id="invoiceItemsTable"></tbody>
                             </table>
                         </div>
 
-                        <!-- Invoice Total Calculation Box -->
                         <div class="calc-summary">
                             <div class="calc-row">
                                 <span>সর্বমোট দাম:</span>
                                 <strong>৳ <span id="subTotal">0.00</span></strong>
                             </div>
                             <div class="calc-row">
-                                <span>জমা (پرداخت):</span>
+                                <span>জমা (Paid):</span>
                                 <input type="number" id="paidAmount" value="0" min="0" oninput="calculateTotals()" class="input-inline">
                             </div>
                             <div class="calc-row highlight-due">
@@ -130,94 +111,254 @@
                             </div>
                         </div>
 
-                        <!-- Action Buttons -->
                         <div class="invoice-actions">
                             <button class="btn btn-outline-danger" onclick="deleteCurrentDraft()">
                                 <i class="fa-solid fa-trash"></i> চালান বাতিল
                             </button>
                             <button class="btn btn-secondary" onclick="openPrintPreview()">
-                                <i class="fa-solid fa-print"></i> প্রাক-দর্শন ও প্রিন্ট
+                                <i class="fa-solid fa-print"></i> প্রিভিউ ও প্রিন্ট
                             </button>
                             <button class="btn btn-success" onclick="confirmSale()">
                                 <i class="fa-solid fa-circle-check"></i> বিক্রি নিশ্চিত করুন
                             </button>
                         </div>
                     </div>
-
                 </div>
             </section>
 
-            <!-- DASHBOARD PLACEHOLDER -->
+            <!-- 2. DASHBOARD SECTION -->
             <section id="dashboard-tab" class="tab-content">
                 <div class="section-header">
                     <h2><i class="fa-solid fa-chart-line"></i> ড্যাশবোর্ড ওভারভিউ</h2>
                 </div>
-                <div class="info-card">
-                    <p><i class="fa-solid fa-circle-info"></i> পরবর্তী ধাপে এখানে আজকের বিক্রি, মোট বাকি, মোট খরচ এবং স্টকের লাইভ সামারি যুক্ত করা হবে।</p>
+                <div class="dashboard-stats-grid">
+                    <div class="stat-card">
+                        <i class="fa-solid fa-bangladeshi-taka-sign"></i>
+                        <div>
+                            <p>আজকের বিক্রি</p>
+                            <h3>৳ <span id="dashTodaySales">0.00</span></h3>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <i class="fa-solid fa-wallet"></i>
+                        <div>
+                            <p>আজকের খরচ</p>
+                            <h3>৳ <span id="dashTodayExpense">0.00</span></h3>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <i class="fa-solid fa-users-rectangle"></i>
+                        <div>
+                            <p>মোট কাস্টমার বাকি</p>
+                            <h3>৳ <span id="dashTotalDue">0.00</span></h3>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <i class="fa-solid fa-box-archive"></i>
+                        <div>
+                            <p>মোট পণ্যের স্টক</p>
+                            <h3 id="dashTotalStock">0 টি</h3>
+                        </div>
+                    </div>
                 </div>
             </section>
 
-            <!-- PRODUCTS PLACEHOLDER -->
+            <!-- 3. PRODUCTS & STOCK SECTION -->
             <section id="products-tab" class="tab-content">
                 <div class="section-header">
-                    <h2><i class="fa-solid fa-boxes-stacked"></i> পণ্য ও স্টক তালিকা</h2>
+                    <h2><i class="fa-solid fa-boxes-stacked"></i> পণ্য ও স্টক ম্যানেজমেন্ট</h2>
+                    <button class="btn btn-gold" onclick="openProductModal()">
+                        <i class="fa-solid fa-plus"></i> নতুন পণ্য যোগ করুন
+                    </button>
                 </div>
-                <div class="info-card">
-                    <p><i class="fa-solid fa-circle-info"></i> পরবর্তী ধাপে নতুন পণ্য যোগ, ক্রয়মূল্য/বিক্রয়মূল্য আপডেট এবং কাস্টম একক যুক্ত করার ফিচার যুক্ত করা হবে।</p>
+                <div class="search-box">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                    <input type="text" id="manageProductSearch" placeholder="স্টক তালিকা থেকে খুঁজুন..." oninput="renderManageProducts()">
+                </div>
+                <div class="table-responsive">
+                    <table class="items-table" style="background: white;">
+                        <thead>
+                            <tr>
+                                <th>পণ্যের নাম</th>
+                                <th>ক্রয়মূল্য (৳)</th>
+                                <th>বিক্রয়মূল্য (৳)</th>
+                                <th>বর্তমান স্টক</th>
+                                <th>একk</th>
+                                <th>অ্যাকশন</th>
+                            </tr>
+                        </thead>
+                        <tbody id="manageProductsTableBody"></tbody>
+                    </table>
                 </div>
             </section>
 
-            <!-- INVOICES PLACEHOLDER -->
+            <!-- 4. ALL INVOICES SECTION -->
             <section id="invoices-tab" class="tab-content">
                 <div class="section-header">
-                    <h2><i class="fa-solid fa-file-invoice-dollar"></i> পূর্বের সকল চালান</h2>
+                    <h2><i class="fa-solid fa-file-invoice-dollar"></i> পূর্বের সকল চালান তালিকা</h2>
                 </div>
-                <div class="info-card">
-                    <p><i class="fa-solid fa-circle-info"></i> সংরক্ষিত সকল চালানের তালিকা এবং পুনারায় প্রিন্ট করার সুবিধা ডাটাবেজ যুক্ত করার পর দৃশ্যমান হবে।</p>
+                <div class="table-responsive">
+                    <table class="items-table" style="background: white;">
+                        <thead>
+                            <tr>
+                                <th>চালান নং</th>
+                                <th>তারিখ</th>
+                                <th>কাস্টমার</th>
+                                <th>মোট (৳)</th>
+                                <th>জমা (৳)</th>
+                                <th>বাকি (৳)</th>
+                                <th>অ্যাকশন</th>
+                            </tr>
+                        </thead>
+                        <tbody id="allInvoicesTableBody"></tbody>
+                    </table>
                 </div>
             </section>
 
-            <!-- CUSTOMERS PLACEHOLDER -->
+            <!-- 5. CUSTOMERS & DUE SECTION -->
             <section id="customers-tab" class="tab-content">
                 <div class="section-header">
-                    <h2><i class="fa-solid fa-users"></i> কাস্টমার ও বাকি খাতা</h2>
+                    <h2><i class="fa-solid fa-users"></i> কাস্টমার বাকি খাতা</h2>
                 </div>
-                <div class="info-card">
-                    <p><i class="fa-solid fa-circle-info"></i> কাস্টমার ভিত্তিক বাকির খাতা ও জমা আদায়ে হিসাব এই মডিউলে সংযুক্ত থাকবে।</p>
+                <div class="table-responsive">
+                    <table class="items-table" style="background: white;">
+                        <thead>
+                            <tr>
+                                <th>কাস্টমার নাম</th>
+                                <th>মোবাইল নম্বর</th>
+                                <th>মোট বাকি (৳)</th>
+                                <th>অ্যাকশন</th>
+                            </tr>
+                        </thead>
+                        <tbody id="customersTableBody"></tbody>
+                    </table>
                 </div>
             </section>
 
-            <!-- EXPENSES PLACEHOLDER -->
+            <!-- 6. EXPENSES SECTION -->
             <section id="expenses-tab" class="tab-content">
                 <div class="section-header">
                     <h2><i class="fa-solid fa-wallet"></i> দোকান খরচ হিসাব</h2>
+                    <button class="btn btn-gold" onclick="openExpenseModal()">
+                        <i class="fa-solid fa-plus"></i> নতুন খরচ যোগ করুন
+                    </button>
                 </div>
-                <div class="info-card">
-                    <p><i class="fa-solid fa-circle-info"></i> দোকান ভাড়া, বিদ্যুৎ বিল, কর্মচারীর বেতন ইত্যাদি খরচের হিসাব এখানে থাকবে।</p>
+                <div class="table-responsive">
+                    <table class="items-table" style="background: white;">
+                        <thead>
+                            <tr>
+                                <th>তারিখ</th>
+                                <th>খাতের বিবরণ</th>
+                                <th>পরিমাণ (৳)</th>
+                                <th>অ্যাকশন</th>
+                            </tr>
+                        </thead>
+                        <tbody id="expensesTableBody"></tbody>
+                    </table>
                 </div>
             </section>
 
-            <!-- REPORTS PLACEHOLDER -->
+            <!-- 7. REPORTS SECTION -->
             <section id="reports-tab" class="tab-content">
                 <div class="section-header">
                     <h2><i class="fa-solid fa-chart-pie"></i> বিক্রি ও লাভের রিপোর্ট</h2>
                 </div>
                 <div class="info-card">
-                    <p><i class="fa-solid fa-circle-info"></i> দৈনিক, সাপ্তাহিক এবং মাসিক লাভ-ক্ষতি রিপোর্ট ব্যবস্থা পরবর্তী ধাপে যুক্ত করা হবে।</p>
+                    <div class="calc-row"><span>মোট বিক্রিত চালান:</span> <strong id="repTotalInvoices">0 টি</strong></div>
+                    <div class="calc-row"><span>মোট বিক্রয় মূল্য:</span> <strong>৳ <span id="repTotalSales">0.00</span></strong></div>
+                    <div class="calc-row"><span>মোট খরচ:</span> <strong>৳ <span id="repTotalExpense">0.00</span></strong></div>
+                    <div class="calc-row highlight-due"><span>আনুমানিক মোট লাভ:</span> <strong>৳ <span id="repTotalProfit">0.00</span></strong></div>
                 </div>
             </section>
 
-            <!-- SETTINGS PLACEHOLDER -->
+            <!-- 8. SETTINGS & BACKUP SECTION -->
             <section id="settings-tab" class="tab-content">
                 <div class="section-header">
-                    <h2><i class="fa-solid fa-gear"></i> সেটিংস ও দোকান তথ্য</h2>
+                    <h2><i class="fa-solid fa-gear"></i> সেটিংস ও ডেটা ব্যাকআপ</h2>
                 </div>
-                <div class="info-card">
-                    <p><i class="fa-solid fa-circle-info"></i> দোকানের নাম, ঠিকানা, মোবাইল নম্বর ও ব্যাকআপ সেটআপ করতে পারবেন।</p>
+                <div class="pos-card" style="max-width: 600px; margin-bottom: 20px;">
+                    <h3>দোকানের তথ্য সেটআপ</h3>
+                    <div class="form-group" style="margin-bottom: 10px;">
+                        <label>দোকানের নাম:</label>
+                        <input type="text" id="settingShopName" class="form-control" placeholder="দোকানের নাম লিখুন">
+                    </div>
+                    <div class="form-group" style="margin-bottom: 10px;">
+                        <label>দোকানের ঠিকানা:</label>
+                        <input type="text" id="settingShopAddress" class="form-control" placeholder="ঠিকানা লিখুন">
+                    </div>
+                    <div class="form-group" style="margin-bottom: 15px;">
+                        <label>মোবাইল নম্বর:</label>
+                        <input type="text" id="settingShopPhone" class="form-control" placeholder="ফোন নম্বর">
+                    </div>
+                    <button class="btn btn-gold" onclick="saveSettingsData()">সেটিংস সংরক্ষণ করুন</button>
+                </div>
+
+                <div class="pos-card" style="max-width: 600px;">
+                    <h3>ডেটা ব্যাকআপ ও রিস্টোর</h3>
+                    <p style="font-size: 0.85rem; color: #64748B; margin-bottom: 15px;">আপনার সমস্ত পণ্য, বিক্রি ও কাস্টমারের ডেটা JSON ফাইলে ব্যাকআপ রাখতে পারেন অথবা রিস্টোর করতে পারেন।</p>
+                    <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                        <button class="btn btn-secondary" onclick="exportDataBackup()"><i class="fa-solid fa-download"></i> ব্যাকআপ ডাউনলোড (JSON)</button>
+                        <label class="btn btn-gold" style="cursor: pointer; margin: 0;">
+                            <i class="fa-solid fa-upload"></i> ডেটা রিস্টোর করুন <input type="file" id="importFile" accept=".json" onchange="importDataBackup(event)" style="display: none;">
+                        </label>
+                    </div>
                 </div>
             </section>
 
         </main>
+    </div>
+
+    <!-- Product Add/Edit Modal -->
+    <div class="modal" id="productModal">
+        <div class="modal-content">
+            <button class="close-modal" onclick="closeProductModal()">&times;</button>
+            <h3 id="productModalTitle">নতুন পণ্য যোগ করুন</h3>
+            <input type="hidden" id="editProductId">
+            <div class="form-group" style="margin-top: 10px;">
+                <label>পণ্যের নাম:</label>
+                <input type="text" id="modalProdName" class="form-control" placeholder="যেমন: আলু, পেঁয়াজ">
+            </div>
+            <div class="form-group" style="margin-top: 10px;">
+                <label>ক্রয়মূল্য (৳):</label>
+                <input type="number" id="modalProdCost" class="form-control" placeholder="0">
+            </div>
+            <div class="form-group" style="margin-top: 10px;">
+                <label>বিক্রয়মূল্য (৳):</label>
+                <input type="number" id="modalProdPrice" class="form-control" placeholder="0">
+            </div>
+            <div class="form-group" style="margin-top: 10px;">
+                <label>প্রাথমিক স্টক পরিমাণ:</label>
+                <input type="number" id="modalProdStock" class="form-control" placeholder="0">
+            </div>
+            <div class="form-group" style="margin-top: 10px;">
+                <label>একক (Unit):</label>
+                <input type="text" id="modalProdUnits" class="form-control" value="kg, gm, pcs">
+            </div>
+            <div class="modal-actions" style="margin-top: 15px;">
+                <button class="btn btn-secondary" onclick="closeProductModal()">বাতিল</button>
+                <button class="btn btn-gold" onclick="saveProductData()">সংরক্ষণ করুন</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Expense Add Modal -->
+    <div class="modal" id="expenseModal">
+        <div class="modal-content">
+            <button class="close-modal" onclick="closeExpenseModal()">&times;</button>
+            <h3>নতুন খরচ যোগ করুন</h3>
+            <div class="form-group" style="margin-top: 10px;">
+                <label>খাতের বিবরণ (যেমন: দোকান ভাড়া, বিদ্যুৎ বিল):</label>
+                <input type="text" id="expReason" class="form-control" placeholder="বিবরণ লিখুন">
+            </div>
+            <div class="form-group" style="margin-top: 10px;">
+                <label>টাকার পরিমাণ (৳):</label>
+                <input type="number" id="expAmount" class="form-control" placeholder="0">
+            </div>
+            <div class="modal-actions" style="margin-top: 15px;">
+                <button class="btn btn-secondary" onclick="closeExpenseModal()">বাতিল</button>
+                <button class="btn btn-gold" onclick="saveExpenseData()">সংরক্ষণ করুন</button>
+            </div>
+        </div>
     </div>
 
     <!-- Printable Invoice Modal View -->
@@ -227,9 +368,9 @@
             
             <div id="printableArea" class="printable-invoice">
                 <div class="invoice-header">
-                    <h2>বিসমিল্লাহ্‌ স্টোর</h2>
-                    <p>মেসার্স বিসমিল্লাহ ট্রেডার্স, পরশুরাম বাজার, ফেনী</p>
-                    <p>মোবাইল: ০১৭১২-০০০০০০, ০১৮১২-০০০০০০</p>
+                    <h2 id="printShopName">বিসমিল্লাহ্‌ স্টোর</h2>
+                    <p id="printShopAddress">পরশুরাম বাজার, ফেনী</p>
+                    <p>মোবাইল: <span id="printShopPhone">০১৭১২-০০০০০০</span></p>
                     <hr>
                     <h3>বিক্রি চালান / ক্যাশ মেমো</h3>
                 </div>
@@ -255,9 +396,7 @@
                             <th>মোট (৳)</th>
                         </tr>
                     </thead>
-                    <tbody id="printTableBody">
-                        <!-- Populated Dynamic Print Items -->
-                    </tbody>
+                    <tbody id="printTableBody"></tbody>
                 </table>
 
                 <div class="print-summary">
