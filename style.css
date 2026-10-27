@@ -1,8 +1,7 @@
-/* --- Color Palette & Variables --- */
 :root {
-    --bg-primary: #0F2D1E;       /* Dark Green */
-    --bg-secondary: #163B29;     /* Slightly Lighter Green */
-    --accent-gold: #D4AF37;      /* Light Gold Accent */
+    --bg-primary: #0F2D1E;
+    --bg-secondary: #163B29;
+    --accent-gold: #D4AF37;
     --gold-hover: #b89628;
     --text-white: #FFFFFF;
     --text-dark: #1E293B;
@@ -14,7 +13,6 @@
     --warning-color: #F59E0B;
 }
 
-/* --- Base Reset --- */
 * {
     margin: 0;
     padding: 0;
@@ -30,7 +28,6 @@ body {
     min-height: 100vh;
 }
 
-/* --- Header Styling --- */
 .app-header {
     background-color: var(--bg-primary);
     color: var(--text-white);
@@ -71,13 +68,11 @@ body {
     cursor: pointer;
 }
 
-/* --- App Layout --- */
 .app-container {
     display: flex;
     flex: 1;
 }
 
-/* Sidebar Navigation */
 .sidebar {
     width: 240px;
     background-color: var(--bg-secondary);
@@ -113,7 +108,6 @@ body {
     color: var(--accent-gold);
 }
 
-/* Main Content Area */
 .main-content {
     flex: 1;
     padding: 20px;
@@ -142,7 +136,6 @@ body {
     color: var(--bg-primary);
 }
 
-/* --- Draft Invoice Tabs --- */
 .draft-tabs-container {
     display: flex;
     gap: 8px;
@@ -176,7 +169,6 @@ body {
     cursor: pointer;
 }
 
-/* --- POS Grid Layout --- */
 .pos-grid {
     display: grid;
     grid-template-columns: 1fr 1.2fr;
@@ -197,7 +189,6 @@ body {
     color: var(--bg-primary);
 }
 
-/* Search Box */
 .search-box {
     display: flex;
     align-items: center;
@@ -221,10 +212,9 @@ body {
     font-size: 0.9rem;
 }
 
-/* Product Selection Cards */
 .products-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
     gap: 10px;
     max-height: 450px;
     overflow-y: auto;
@@ -257,7 +247,6 @@ body {
     font-weight: bold;
 }
 
-/* Invoice Details Form & Table */
 .invoice-header-info {
     display: flex;
     justify-content: space-between;
@@ -277,6 +266,11 @@ body {
     color: #92400E;
 }
 
+.badge-success {
+    background: #D1FAE5;
+    color: #065F46;
+}
+
 .customer-form {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -291,18 +285,18 @@ body {
     color: #475569;
 }
 
-.form-group input {
+.form-group input, .form-control {
     width: 100%;
     padding: 6px 10px;
     border: 1px solid var(--border-color);
     border-radius: 6px;
     font-size: 0.85rem;
+    outline: none;
 }
 
-/* Invoice Items Table */
 .table-responsive {
     overflow-x: auto;
-    max-height: 250px;
+    max-height: 350px;
 }
 
 .items-table {
@@ -334,7 +328,6 @@ body {
     text-align: center;
 }
 
-/* Calculation Area */
 .calc-summary {
     background: var(--bg-light);
     border-radius: 8px;
@@ -364,7 +357,6 @@ body {
     text-align: right;
 }
 
-/* Buttons */
 .btn {
     padding: 8px 14px;
     border: none;
@@ -417,7 +409,41 @@ body {
     box-shadow: var(--card-shadow);
 }
 
-/* --- Modal & Printing Styles --- */
+/* Dashboard Grid */
+.dashboard-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.stat-card {
+    background: white;
+    padding: 15px;
+    border-radius: 8px;
+    box-shadow: var(--card-shadow);
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    border-left: 4px solid var(--accent-gold);
+}
+
+.stat-card i {
+    font-size: 2rem;
+    color: var(--bg-primary);
+}
+
+.stat-card p {
+    font-size: 0.8rem;
+    color: #64748B;
+}
+
+.stat-card h3 {
+    font-size: 1.1rem;
+    color: var(--bg-primary);
+}
+
+/* Modal & Printing Styles */
 .modal {
     display: none;
     position: fixed;
@@ -435,6 +461,8 @@ body {
     padding: 20px;
     border-radius: 8px;
     position: relative;
+    max-height: 90vh;
+    overflow-y: auto;
 }
 
 .close-modal {
@@ -501,7 +529,6 @@ body {
     gap: 10px;
 }
 
-/* --- Responsive CSS for Mobile Devices --- */
 @media (max-width: 768px) {
     .mobile-menu-btn {
         display: block;
@@ -528,7 +555,6 @@ body {
     }
 }
 
-/* CSS for Thermal / Document Print */
 @media print {
     body * {
         visibility: hidden;
