@@ -126,39 +126,99 @@
                 </div>
             </section>
 
-            <!-- 2. DASHBOARD SECTION -->
+            <!-- 2. MODERN PREMIUM DASHBOARD SECTION -->
             <section id="dashboard-tab" class="tab-content">
-                <div class="section-header">
-                    <h2><i class="fa-solid fa-chart-line"></i> ড্যাশবোর্ড ওভারভিউ</h2>
+                <div class="dashboard-welcome-banner">
+                    <div class="welcome-text">
+                        <h2><i class="fa-solid fa-chart-line"></i> ড্যাশবোর্ড ওভারভিউ</h2>
+                        <p>আপনার দোকানের আজকের ব্যবসার লাইভ সারসংক্ষেপ</p>
+                    </div>
+                    <div class="current-date-badge" id="currentDateDisplay">
+                        <i class="fa-regular fa-calendar-days"></i> <span id="dashDateText">তারিখ লোড হচ্ছে...</span>
+                    </div>
                 </div>
+
+                <!-- Summary Stat Cards -->
                 <div class="dashboard-stats-grid">
-                    <div class="stat-card">
-                        <i class="fa-solid fa-bangladeshi-taka-sign"></i>
-                        <div>
+                    <div class="stat-card stat-sales">
+                        <div class="stat-icon"><i class="fa-solid fa-bangladeshi-taka-sign"></i></div>
+                        <div class="stat-info">
                             <p>আজকের বিক্রি</p>
                             <h3>৳ <span id="dashTodaySales">0.00</span></h3>
                         </div>
                     </div>
-                    <div class="stat-card">
-                        <i class="fa-solid fa-wallet"></i>
-                        <div>
+                    <div class="stat-card stat-profit">
+                        <div class="stat-icon"><i class="fa-solid fa-chart-pie"></i></div>
+                        <div class="stat-info">
+                            <p>আজকের আনুমানিক লাভ</p>
+                            <h3>৳ <span id="dashTodayProfit">0.00</span></h3>
+                        </div>
+                    </div>
+                    <div class="stat-card stat-expense">
+                        <div class="stat-icon"><i class="fa-solid fa-wallet"></i></div>
+                        <div class="stat-info">
                             <p>আজকের খরচ</p>
                             <h3>৳ <span id="dashTodayExpense">0.00</span></h3>
                         </div>
                     </div>
-                    <div class="stat-card">
-                        <i class="fa-solid fa-users-rectangle"></i>
-                        <div>
+                    <div class="stat-card stat-due">
+                        <div class="stat-icon"><i class="fa-solid fa-users-rectangle"></i></div>
+                        <div class="stat-info">
                             <p>মোট কাস্টমার বাকি</p>
                             <h3>৳ <span id="dashTotalDue">0.00</span></h3>
                         </div>
                     </div>
-                    <div class="stat-card">
-                        <i class="fa-solid fa-box-archive"></i>
-                        <div>
+                    <div class="stat-card stat-stock">
+                        <div class="stat-icon"><i class="fa-solid fa-box-archive"></i></div>
+                        <div class="stat-info">
                             <p>মোট পণ্যের স্টক</p>
                             <h3 id="dashTotalStock">0 টি</h3>
                         </div>
+                    </div>
+                </div>
+
+                <!-- Quick Action Shortcuts -->
+                <div class="dashboard-shortcuts-card">
+                    <h3><i class="fa-solid fa-bolt"></i> দ্রুত শর্টকাট অ্যাকশন</h3>
+                    <div class="shortcuts-grid">
+                        <button class="shortcut-btn" onclick="switchTab('sales-tab', document.querySelector('.nav-item'))">
+                            <i class="fa-solid fa-cart-plus"></i>
+                            <span>নতুন বিক্রি</span>
+                        </button>
+                        <button class="shortcut-btn" onclick="openProductModal()">
+                            <i class="fa-solid fa-boxes-stacked"></i>
+                            <span>পণ্য যোগ করুন</span>
+                        </button>
+                        <button class="shortcut-btn" onclick="switchTab('invoices-tab', document.querySelectorAll('.nav-item')[3])">
+                            <i class="fa-solid fa-file-invoice"></i>
+                            <span>সব চালান</span>
+                        </button>
+                        <button class="shortcut-btn" onclick="switchTab('reports-tab', document.querySelectorAll('.nav-item')[6])">
+                            <i class="fa-solid fa-chart-column"></i>
+                            <span>রিপোর্ট দেখুন</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Recent Sales Table -->
+                <div class="dashboard-recent-card">
+                    <h3><i class="fa-solid fa-clock-rotate-left"></i> সাম্প্রতিক ৫টি বিক্রি</h3>
+                    <div class="table-responsive">
+                        <table class="items-table" style="background: white;">
+                            <thead>
+                                <tr>
+                                    <th>চালান নং</th>
+                                    <th>তারিখ</th>
+                                    <th>কাস্টমার</th>
+                                    <th>মোট (৳)</th>
+                                    <th>জমা (৳)</th>
+                                    <th>বাকি (৳)</th>
+                                </tr>
+                            </thead>
+                            <tbody id="dashRecentSalesTableBody">
+                                <tr><td colspan="6" style="text-align:center; color:#94A3B8;">কোনো তথ্য পাওয়া যায়নি</td></tr>
+                            </tbody>
+                        </table>
                     </div>
                 </div>
             </section>
@@ -183,7 +243,7 @@
                                 <th>ক্রয়মূল্য (৳)</th>
                                 <th>বিক্রয়মূল্য (৳)</th>
                                 <th>বর্তমান স্টক</th>
-                                <th>একk</th>
+                                <th>একক</th>
                                 <th>অ্যাকশন</th>
                             </tr>
                         </thead>
