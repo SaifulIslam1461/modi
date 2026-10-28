@@ -310,6 +310,7 @@
                     <table class="items-table" style="background: white;">
                         <thead>
                             <tr>
+                                <th>ছবি</th>
                                 <th>পণ্যের নাম</th>
                                 <th>ক্রয়মূল্য (৳)</th>
                                 <th>বিক্রয়মূল্য (৳)</th>
@@ -465,6 +466,10 @@
                 <label>একক (Unit):</label>
                 <input type="text" id="modalProdUnits" class="form-control" value="kg, gm, pcs">
             </div>
+            <div class="form-group" style="margin-top: 10px;">
+                <label>পণ্যের ছবি (Image):</label>
+                <input type="file" id="modalProdImage" class="form-control" accept="image/*">
+            </div>
             <div class="modal-actions" style="margin-top: 15px;">
                 <button class="btn btn-secondary" onclick="closeProductModal()">বাতিল</button>
                 <button class="btn btn-gold" onclick="saveProductData()">সংরক্ষণ করুন</button>
@@ -543,9 +548,12 @@
                 </div>
             </div>
 
-            <div class="modal-actions">
-                <button class="btn btn-secondary" onclick="closePrintPreview()">বন্ধ করুন</button>
-                <button class="btn btn-gold" onclick="triggerPrint()"><i class="fa-solid fa-print"></i> প্রিন্ট/PDF সেভ করুন</button>
+            <div class="modal-actions" style="justify-content: space-between; flex-wrap: wrap;">
+                <button class="btn btn-success" style="background-color: #25D366; color: white;" onclick="sendInvoiceToWhatsApp()"><i class="fa-brands fa-whatsapp"></i> WhatsApp এ পাঠান</button>
+                <div style="display: flex; gap: 10px;">
+                    <button class="btn btn-secondary" onclick="closePrintPreview()">বন্ধ করুন</button>
+                    <button class="btn btn-gold" onclick="triggerPrint()"><i class="fa-solid fa-print"></i> প্রিন্ট/PDF</button>
+                </div>
             </div>
         </div>
     </div>
