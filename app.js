@@ -18,7 +18,15 @@ let productsCache = [];
 let draftInvoices = [];
 let activeDraftId = null;
 let invoiceCounter = 1001;
-let shopSettings = { name: "বিসমিল্লাহ্‌ স্টোর", address: "পরশুরাম বাজার, ফেনী", phone: "০১৭১২-০০০০০০" };
+let shopSettings = { 
+    name: "সাইফুল স্টোর", 
+    address: "পরশুরাম বাজার, ফেনী", 
+    phone: "০১৬০৩১৪৬১৪৯", 
+    email: "saifulislamtareq6149@gmail.com",
+    ownerName: "সাইফুল ইসলাম",
+    ownerRole: "মালিক",
+    logo: "" 
+};
 
 // Initialize Database & App
 document.addEventListener("DOMContentLoaded", () => {
@@ -66,7 +74,7 @@ function loadAppSettings() {
 
     request.onsuccess = () => {
         if (request.result) {
-            shopSettings = request.result.data;
+            shopSettings = { ...shopSettings, ...request.result.data };
         } else {
             saveAppSettingsToDB();
         }
@@ -82,23 +90,42 @@ function saveAppSettingsToDB() {
 
 function applySettingsToUI() {
     document.getElementById("headerShopName").innerText = shopSettings.name;
-    document.getElementById("printShopName").innerText = shopSettings.name;
-    document.getElementById("printShopAddress").innerText = shopSettings.address;
-    document.getElementById("printShopPhone").innerText = shopSettings.phone;
+    document.getElementById("headerShopSub").innerText = shopSettings.address;
 
-    document.getElementById("settingShopName").value = shopSettings.name;
-    document.getElementById("settingShopAddress").value = shopSettings.address;
-    document.getElementById("settingShopPhone").value = shopSettings.phone;
+    document.getElementById("settingShopName").value = shopSettings.name || "";
+    document.getElementById("settingShopAddress").value = shopSettings.address || "";
+    document.getElementById("settingShopPhone").value = shopSettings.phone || "";
+    document.getElementById("settingShopEmail").value = shopSettings.email || "";
+    document.getElementById("settingOwnerName").value = shopSettings.ownerName || "";
+    document.getElementById("settingOwnerRole").value = shopSettings.ownerRole || "মালিক";
 }
 
 function saveSettingsData() {
-    shopSettings.name = document.getElementById("settingShopName").value || "Smart Dokan";
+    shopSettings.name = document.getElementById("settingShopName").value || "সাইফুল স্টোর";
     shopSettings.address = document.getElementById("settingShopAddress").value || "";
     shopSettings.phone = document.getElementById("settingShopPhone").value || "";
+    shopSettings.email = document.getElementById("settingShopEmail").value || "";
+    shopSettings.ownerName = document.getElementById("settingOwnerName").value || "";
+    shopSettings.ownerRole = document.getElementById("settingOwnerRole").value || "মালিক";
 
-    saveAppSettingsToDB();
-    applySettingsToUI();
-    alert("সেটিংস সফলভাবে সংরক্ষিত হয়েছে!");
+    const logoInput = document.getElementById("settingShopLogo");
+
+    const persist = (logoBase64) => {
+        if (logoBase64) shopSettings.logo = logoBase64;
+        saveAppSettingsToDB();
+        applySettingsToUI();
+        alert("সেটিংস সফলভাবে সংরক্ষিত হয়েছে!");
+    };
+
+    if (logoInput.files && logoInput.files[0]) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            persist(e.target.result);
+        };
+        reader.readAsDataURL(logoInput.files[0]);
+    } else {
+        persist(null);
+    }
 }
 
 // --- Products CRUD & DB ---
@@ -518,7 +545,7 @@ function confirmSale() {
 
     const saleRecord = {
         id: draft.id,
-        customerName: draft.customerName || "সাধারণ কাস্টমার",
+        customerName: draft.customerName || "সাধারণ ক্রেতা",
         customerPhone: draft.customerPhone || "N/A",
         items: draft.items,
         subtotal: finalTotal,
@@ -605,7 +632,7 @@ function loadCustomers() {
         const customerMap = {};
 
         sales.forEach(s => {
-            if (s.due > 0 && s.customerName !== "সাধারণ কাস্টমার") {
+            if (s.due > 0 && s.customerName !== "সাধারণ ক্রেতা") {
                 if (!customerMap[s.customerName]) {
                     customerMap[s.customerName] = { name: s.customerName, phone: s.customerPhone, due: 0 };
                 }
@@ -786,7 +813,7 @@ function refreshDashboardStats() {
             totalDue += s.due;
             totalCollected += s.paid;
             totalRevenue += s.subtotal;
-            if (s.customerName && s.customerName !== "সাধারণ কাস্টমার") {
+            if (s.customerName && s.customerName !== "সাধারণ ক্রেতা") {
                 uniqueCustomers.add(s.customerName);
             }
 
@@ -987,8 +1014,7 @@ function toggleSidebar() {
 
 // --- WhatsApp Invoice Share ---
 function sendInvoiceToWhatsApp() {
-    const draft = getActiveDraft();
-    const phone = document.getElementById("printCustPhone").innerText.trim();
+    const phone = document.getElementById("printShopPhone").innerText.trim();
     const custName = document.getElementById("printCustName").innerText.trim();
     const invoiceNo = document.getElementById("printInvoiceNo").innerText.trim();
     const subtotal = document.getElementById("printSubtotal").innerText;
@@ -1018,7 +1044,9 @@ function sendInvoiceToWhatsApp() {
     msg += `-------------------\n`;
     msg += `ধন্যবাদ, আবার আসবেন!`;
 
-    let cleanPhone = phone.replace(/[^0-9]/g, '');
+    const draft = getActiveDraft();
+    let custPhone = draft && draft.customerPhone ? draft.customerPhone : "";
+    let cleanPhone = custPhone.replace(/[^0-9]/g, '');
     if (cleanPhone.startsWith('0')) {
         cleanPhone = '88' + cleanPhone;
     }
@@ -1036,10 +1064,27 @@ function openPrintPreview() {
         return;
     }
 
+    // Apply Shop Settings to Invoice Preview
+    document.getElementById("printShopName").innerText = shopSettings.name;
+    document.getElementById("printShopAddress").innerText = shopSettings.address;
+    document.getElementById("printShopPhone").innerText = shopSettings.phone;
+    document.getElementById("printFooterPhone").innerText = shopSettings.phone;
+    document.getElementById("printFooterEmail").innerText = shopSettings.email || "N/A";
+    document.getElementById("printFooterAddress").innerText = shopSettings.address;
+    document.getElementById("printOwnerName").innerText = shopSettings.ownerName;
+    document.getElementById("printOwnerRole").innerText = shopSettings.ownerRole;
+
+    const logoImg = document.getElementById("printShopLogo");
+    if (shopSettings.logo) {
+        logoImg.src = shopSettings.logo;
+        logoImg.style.display = "block";
+    } else {
+        logoImg.style.display = "none";
+    }
+
     document.getElementById("printInvoiceNo").innerText = draft.id;
     document.getElementById("printDate").innerText = new Date().toLocaleDateString('bn-BD');
-    document.getElementById("printCustName").innerText = draft.customerName || "সাধারণ কাস্টমার";
-    document.getElementById("printCustPhone").innerText = draft.customerPhone || "N/A";
+    document.getElementById("printCustName").innerText = draft.customerName ? draft.customerName : "সাধারণ ক্রেতা";
 
     const printTbody = document.getElementById("printTableBody");
     printTbody.innerHTML = "";
@@ -1053,7 +1098,7 @@ function openPrintPreview() {
         const tr = document.createElement("tr");
         tr.innerHTML = `
             <td>${index + 1}</td>
-            <td>${item.name}</td>
+            <td style="text-align: left; padding-left: 8px;">${item.name}</td>
             <td>${item.qty} ${item.unit}</td>
             <td>৳${item.price}</td>
             <td>৳${itemTotal.toFixed(2)}</td>
@@ -1091,10 +1136,26 @@ function reprintInvoice(id) {
         const s = req.result;
         if (!s) return;
 
+        document.getElementById("printShopName").innerText = shopSettings.name;
+        document.getElementById("printShopAddress").innerText = shopSettings.address;
+        document.getElementById("printShopPhone").innerText = shopSettings.phone;
+        document.getElementById("printFooterPhone").innerText = shopSettings.phone;
+        document.getElementById("printFooterEmail").innerText = shopSettings.email || "N/A";
+        document.getElementById("printFooterAddress").innerText = shopSettings.address;
+        document.getElementById("printOwnerName").innerText = shopSettings.ownerName;
+        document.getElementById("printOwnerRole").innerText = shopSettings.ownerRole;
+
+        const logoImg = document.getElementById("printShopLogo");
+        if (shopSettings.logo) {
+            logoImg.src = shopSettings.logo;
+            logoImg.style.display = "block";
+        } else {
+            logoImg.style.display = "none";
+        }
+
         document.getElementById("printInvoiceNo").innerText = s.id;
         document.getElementById("printDate").innerText = new Date(s.date).toLocaleDateString('bn-BD');
         document.getElementById("printCustName").innerText = s.customerName;
-        document.getElementById("printCustPhone").innerText = s.customerPhone;
 
         const printTbody = document.getElementById("printTableBody");
         printTbody.innerHTML = "";
@@ -1107,7 +1168,7 @@ function reprintInvoice(id) {
             const tr = document.createElement("tr");
             tr.innerHTML = `
                 <td>${index + 1}</td>
-                <td>${item.name}</td>
+                <td style="text-align: left; padding-left: 8px;">${item.name}</td>
                 <td>${item.qty} ${item.unit}</td>
                 <td>৳${item.price}</td>
                 <td>৳${itemTotal.toFixed(2)}</td>
