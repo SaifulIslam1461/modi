@@ -379,7 +379,7 @@ body {
 
 .chart-container {
     position: relative;
-    height: 280px;
+    height: 300px;
     width: 100%;
 }
 
@@ -481,6 +481,16 @@ body {
     border-color: var(--accent-gold);
     transform: translateY(-2px);
     background: #FFFDF0;
+}
+
+.product-thumb {
+    width: 45px;
+    height: 45px;
+    object-fit: cover;
+    border-radius: 6px;
+    margin: 0 auto 4px auto;
+    display: block;
+    border: 1px solid var(--border-color);
 }
 
 .product-item h4 {
