@@ -67,8 +67,8 @@
 
                     <div class="pos-card invoice-details-card">
                         <div class="invoice-header-info">
-                            <span class="badge" id="activeInvoiceNo">চালান #INV-1001</span>
-                            <span class="badge badge-warning" id="activeInvoiceStatus">ড্রাফট (Draft)</span>
+                            <span class="badge" id="activeInvoiceNo"><i class="fa-solid fa-receipt"></i> চালান #INV-1001</span>
+                            <span class="badge badge-warning" id="activeInvoiceStatus"><i class="fa-solid fa-clock"></i> ড্রাফট (Draft)</span>
                         </div>
 
                         <div class="customer-form">
@@ -86,12 +86,12 @@
                             <table class="items-table">
                                 <thead>
                                     <tr>
-                                        <th>পণ্য</th>
-                                        <th>মূল্য</th>
-                                        <th style="width: 100px;">পরিমাণ</th>
-                                        <th>একক</th>
-                                        <th>মোট</th>
-                                        <th>#</th>
+                                        <th><i class="fa-solid fa-box"></i> পণ্য</th>
+                                        <th><i class="fa-solid fa-tag"></i> মূল্য (৳)</th>
+                                        <th style="width: 90px;"><i class="fa-solid fa-scale-balanced"></i> পরিমাণ</th>
+                                        <th><i class="fa-solid fa-weight-scale"></i> একক</th>
+                                        <th><i class="fa-solid fa-calculator"></i> মোট</th>
+                                        <th><i class="fa-solid fa-trash-can"></i></th>
                                     </tr>
                                 </thead>
                                 <tbody id="invoiceItemsTable"></tbody>
@@ -100,15 +100,19 @@
 
                         <div class="calc-summary">
                             <div class="calc-row">
-                                <span>সর্বমোট দাম:</span>
+                                <span><i class="fa-solid fa-coins"></i> সর্বমোট দাম:</span>
                                 <strong>৳ <span id="subTotal">0.00</span></strong>
                             </div>
                             <div class="calc-row">
-                                <span>জমা (Paid):</span>
+                                <span><i class="fa-solid fa-percent"></i> ডিসকাউন্ট (Discount):</span>
+                                <input type="number" id="discountAmount" value="0" min="0" oninput="calculateTotals()" class="input-inline">
+                            </div>
+                            <div class="calc-row">
+                                <span><i class="fa-solid fa-money-bill-wave"></i> জমা (Paid):</span>
                                 <input type="number" id="paidAmount" value="0" min="0" oninput="calculateTotals()" class="input-inline">
                             </div>
                             <div class="calc-row highlight-due">
-                                <span>বাকি (Due):</span>
+                                <span><i class="fa-solid fa-hand-holding-dollar"></i> বাকি (Due):</span>
                                 <strong>৳ <span id="dueAmount">0.00</span></strong>
                             </div>
                         </div>
@@ -164,7 +168,7 @@
                     <div class="low-stock-items-chips" id="lowStockChipsContainer"></div>
                 </div>
 
-                <!-- Summary Stat Cards (8 Essential Cards) -->
+                <!-- Summary Stat Cards -->
                 <div class="dashboard-stats-grid">
                     <div class="stat-card stat-sales">
                         <div class="stat-icon"><i class="fa-solid fa-bangladeshi-taka-sign"></i></div>
@@ -528,6 +532,7 @@
 
                 <div class="print-summary">
                     <p><strong>সর্বমোট:</strong> ৳ <span id="printSubtotal">0</span></p>
+                    <p><strong>ডিসকাউন্ট:</strong> ৳ <span id="printDiscount">0</span></p>
                     <p><strong>জমা:</strong> ৳ <span id="printPaid">0</span></p>
                     <p class="print-due"><strong>বাকি:</strong> ৳ <span id="printDue">0</span></p>
                 </div>
