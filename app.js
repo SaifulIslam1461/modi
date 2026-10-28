@@ -130,6 +130,7 @@ function seedDefaultProducts() {
 
 function renderProductCatalog(products) {
     const grid = document.getElementById("productsCatalogGrid");
+    if (!grid) return;
     grid.innerHTML = "";
 
     products.forEach(p => {
@@ -153,6 +154,7 @@ function filterProductsCatalog() {
 
 function renderManageProducts() {
     const tbody = document.getElementById("manageProductsTableBody");
+    if (!tbody) return;
     tbody.innerHTML = "";
     const query = document.getElementById("manageProductSearch") ? document.getElementById("manageProductSearch").value.toLowerCase() : "";
 
@@ -236,6 +238,7 @@ function saveProductData() {
     transaction.oncomplete = () => {
         closeProductModal();
         loadProductsFromDB();
+        refreshDashboardStats();
     };
 }
 
@@ -250,6 +253,7 @@ function deleteProduct(id) {
         store.delete(id);
         transaction.oncomplete = () => {
             loadProductsFromDB();
+            refreshDashboardStats();
         };
     }
 }
@@ -277,6 +281,7 @@ function setActiveDraft(id) {
 
 function renderDraftTabs() {
     const container = document.getElementById("draftTabsContainer");
+    if (!container) return;
     container.innerHTML = "";
 
     draftInvoices.forEach((draft, index) => {
@@ -363,6 +368,7 @@ function addProductToActiveInvoice(product) {
 function renderInvoiceItems() {
     const draft = getActiveDraft();
     const tbody = document.getElementById("invoiceItemsTable");
+    if (!tbody) return;
     tbody.innerHTML = "";
 
     if (!draft || draft.items.length === 0) {
@@ -507,6 +513,7 @@ function loadAllInvoices() {
     request.onsuccess = () => {
         const sales = request.result;
         const tbody = document.getElementById("allInvoicesTableBody");
+        if (!tbody) return;
         tbody.innerHTML = "";
 
         if (sales.length === 0) {
@@ -551,6 +558,7 @@ function loadCustomers() {
         });
 
         const tbody = document.getElementById("customersTableBody");
+        if (!tbody) return;
         tbody.innerHTML = "";
         const customers = Object.values(customerMap);
 
@@ -611,6 +619,7 @@ function loadExpenses() {
     request.onsuccess = () => {
         const expenses = request.result;
         const tbody = document.getElementById("expensesTableBody");
+        if (!tbody) return;
         tbody.innerHTML = "";
 
         if (expenses.length === 0) {
@@ -644,102 +653,255 @@ function deleteExpense(id) {
     }
 }
 
-// Dashboard & Reports stats (Updated with Live DB Stats & Recent Sales)
+// --- Advanced Dashboard Logic & Filters ---
+let currentDashboardFilter = 'today';
+let dashboardChartInstance = null;
+
+function setDashboardFilter(filterType, btnElement) {
+    currentDashboardFilter = filterType;
+    document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
+    if (btnElement) btnElement.classList.add('active');
+
+    const customBox = document.getElementById("customDateBox");
+    if (filterType === 'custom') {
+        customBox.classList.add('show');
+    } else {
+        customBox.classList.remove('show');
+        refreshDashboardStats();
+    }
+}
+
+function applyCustomDateFilter() {
+    if (currentDashboardFilter === 'custom') {
+        refreshDashboardStats();
+    }
+}
+
+function isDateInFilterRange(dateString, filterType) {
+    const itemDate = new Date(dateString);
+    const now = new Date();
+
+    if (filterType === 'today') {
+        return itemDate.toDateString() === now.toDateString();
+    } else if (filterType === 'yesterday') {
+        const yesterday = new Date();
+        yesterday.setDate(now.getDate() - 1);
+        return itemDate.toDateString() === yesterday.toDateString();
+    } else if (filterType === 'week') {
+        const oneWeekAgo = new Date();
+        oneWeekAgo.setDate(now.getDate() - 7);
+        return itemDate >= oneWeekAgo && itemDate <= now;
+    } else if (filterType === 'month') {
+        return itemDate.getMonth() === now.getMonth() && itemDate.getFullYear() === now.getFullYear();
+    } else if (filterType === 'year') {
+        return itemDate.getFullYear() === now.getFullYear();
+    } else if (filterType === 'custom') {
+        const startVal = document.getElementById("filterStartDate").value;
+        const endVal = document.getElementById("filterEndDate").value;
+        if (!startVal || !endVal) return true;
+        const startDate = new Date(startVal);
+        startDate.setHours(0,0,0,0);
+        const endDate = new Date(endVal);
+        endDate.setHours(23,59,59,999);
+        return itemDate >= startDate && itemDate <= endDate;
+    }
+    return true;
+}
+
 function refreshDashboardStats() {
-    // Set formatted current date in Bangla locale
     const options = { year: 'numeric', month: 'long', day: 'numeric', weekday: 'long' };
     const dateStr = new Date().toLocaleDateString('bn-BD', options);
     const dateElem = document.getElementById("dashDateText");
     if (dateElem) dateElem.innerText = dateStr;
 
     const tx = db.transaction(["sales", "expenses", "products"], "readonly");
-    
+
     tx.objectStore("sales").getAll().onsuccess = (e) => {
         const sales = e.target.result;
-        let todaySales = 0;
-        let todayProfit = 0;
+        let periodSales = 0;
+        let periodGrossProfit = 0;
         let totalDue = 0;
+        let totalCollected = 0;
         let totalRevenue = 0;
-        let totalCost = 0;
-        const todayStr = new Date().toDateString();
+        let totalInvoicesCount = sales.length;
+        const uniqueCustomers = new Set();
 
         sales.forEach(s => {
             totalDue += s.due;
+            totalCollected += s.paid;
             totalRevenue += s.subtotal;
+            if (s.customerName && s.customerName !== "সাধারণ কাস্টমার") {
+                uniqueCustomers.add(s.customerName);
+            }
 
             let saleCost = 0;
             s.items.forEach(item => {
                 let itemCost = (item.costPrice || 0) * item.qty;
                 if (item.unit === "gm") itemCost = ((item.costPrice || 0) / 1000) * item.qty;
                 saleCost += itemCost;
-                totalCost += itemCost;
             });
 
-            if (new Date(s.date).toDateString() === todayStr) {
-                todaySales += s.subtotal;
-                todayProfit += (s.subtotal - saleCost);
+            if (isDateInFilterRange(s.date, currentDashboardFilter)) {
+                periodSales += s.subtotal;
+                periodGrossProfit += (s.subtotal - saleCost);
             }
         });
 
-        document.getElementById("dashTodaySales").innerText = todaySales.toFixed(2);
         document.getElementById("dashTotalDue").innerText = totalDue.toFixed(2);
-        document.getElementById("repTotalInvoices").innerText = `${sales.length} টি`;
+        document.getElementById("dashTotalCustomers").innerText = `${uniqueCustomers.size} জন`;
+        document.getElementById("repTotalInvoices").innerText = `${totalInvoicesCount} টি`;
         document.getElementById("repTotalSales").innerText = totalRevenue.toFixed(2);
 
-        // Render Recent 5 Sales Table on Dashboard
-        const recentTbody = document.getElementById("dashRecentSalesTableBody");
-        if (recentTbody) {
-            recentTbody.innerHTML = "";
-            if (sales.length === 0) {
-                recentTbody.innerHTML = `<tr><td colspan="6" style="text-align:center; color:#94A3B8;">কোনো বিক্রির তথ্য নেই</td></tr>`;
-            } else {
-                const recentSales = [...sales].reverse().slice(0, 5);
-                recentSales.forEach(s => {
-                    const dStr = new Date(s.date).toLocaleDateString('bn-BD');
-                    const tr = document.createElement("tr");
-                    tr.innerHTML = `
-                        <td>${s.id}</td>
-                        <td>${dStr}</td>
-                        <td>${s.customerName}</td>
-                        <td>৳${s.subtotal.toFixed(2)}</td>
-                        <td>৳${s.paid.toFixed(2)}</td>
-                        <td style="color:var(--danger-color);">৳${s.due.toFixed(2)}</td>
-                    `;
-                    recentTbody.appendChild(tr);
-                });
-            }
-        }
-
-        // Expenses stats
         tx.objectStore("expenses").getAll().onsuccess = (ev) => {
             const expenses = ev.target.result;
-            let todayExp = 0;
-            let totalExp = 0;
+            let periodExpense = 0;
+            let totalExpense = 0;
 
             expenses.forEach(ex => {
-                totalExp += ex.amount;
-                if (new Date(ex.date).toDateString() === todayStr) {
-                    todayExp += ex.amount;
+                totalExpense += ex.amount;
+                if (isDateInFilterRange(ex.date, currentDashboardFilter)) {
+                    periodExpense += ex.amount;
                 }
             });
 
-            document.getElementById("dashTodayExpense").innerText = todayExp.toFixed(2);
-            document.getElementById("repTotalExpense").innerText = totalExp.toFixed(2);
+            const netProfit = periodGrossProfit - periodExpense;
+            document.getElementById("dashPeriodSales").innerText = periodSales.toFixed(2);
+            document.getElementById("dashPeriodExpense").innerText = periodExpense.toFixed(2);
+            document.getElementById("dashPeriodNetProfit").innerText = netProfit.toFixed(2);
+            document.getElementById("dashPeriodCollected").innerText = totalCollected.toFixed(2);
+            document.getElementById("repTotalExpense").innerText = totalExpense.toFixed(2);
+            document.getElementById("repTotalProfit").innerText = (totalRevenue - totalExpense).toFixed(2);
 
-            const netProfit = totalRevenue - totalCost - totalExp;
-            document.getElementById("repTotalProfit").innerText = netProfit.toFixed(2);
+            // Recent Transactions Table Update
+            const recentTbody = document.getElementById("dashRecentSalesTableBody");
+            if (recentTbody) {
+                recentTbody.innerHTML = "";
+                const filteredSales = sales.filter(s => isDateInFilterRange(s.date, currentDashboardFilter));
+                const displaySales = filteredSales.length > 0 ? filteredSales : sales;
 
-            const todayNetProfit = todayProfit - todayExp;
-            document.getElementById("dashTodayProfit").innerText = todayNetProfit.toFixed(2);
+                if (displaySales.length === 0) {
+                    recentTbody.innerHTML = `<tr><td colspan="7" style="text-align:center; color:#94A3B8;">কোনো লেনদেন পাওয়া যায়নি</td></tr>`;
+                } else {
+                    [...displaySales].reverse().slice(0, 6).forEach(s => {
+                        const dStr = new Date(s.date).toLocaleDateString('bn-BD');
+                        const statusBadge = s.due === 0 ? '<span class="badge badge-success">নগদ</span>' : '<span class="badge badge-warning">বাকি</span>';
+                        const tr = document.createElement("tr");
+                        tr.innerHTML = `
+                            <td>${s.id}</td>
+                            <td>${dStr}</td>
+                            <td>${s.customerName}</td>
+                            <td>৳${s.subtotal.toFixed(2)}</td>
+                            <td>৳${s.paid.toFixed(2)}</td>
+                            <td style="color:var(--danger-color);">৳${s.due.toFixed(2)}</td>
+                            <td>${statusBadge}</td>
+                        `;
+                        recentTbody.appendChild(tr);
+                    });
+                }
+            }
         };
 
-        // Stock count
+        // Stock metrics & Low stock warnings
         tx.objectStore("products").getAll().onsuccess = (evProd) => {
             const prods = evProd.result;
-            let totalStock = prods.reduce((acc, p) => acc + p.stock, 0);
-            document.getElementById("dashTotalStock").innerText = `${totalStock} টি`;
+            let totalStockQty = 0;
+            let totalStockVal = 0;
+            let lowStockItems = [];
+
+            prods.forEach(p => {
+                totalStockQty += p.stock;
+                totalStockVal += (p.costPrice || 0) * p.stock;
+                if (p.stock <= 10) {
+                    lowStockItems.push(p);
+                }
+            });
+
+            document.getElementById("dashTotalStock").innerText = `${totalStockQty} টি`;
+            document.getElementById("dashTotalStockValue").innerText = totalStockVal.toFixed(2);
+
+            // Render Low Stock Alert Banner
+            const alertCard = document.getElementById("lowStockAlertSection");
+            const chipsContainer = document.getElementById("lowStockChipsContainer");
+            if (lowStockItems.length > 0) {
+                alertCard.style.display = "block";
+                chipsContainer.innerHTML = lowStockItems.map(p => `<div class="stock-chip">${p.name} (অবশিষ্ট: ${p.stock})</div>`).join('');
+            } else {
+                alertCard.style.display = "none";
+            }
+
+            // Render Interactive Chart
+            renderDashboardChart(sales);
         };
     };
+}
+
+// Chart.js implementation for Sales & Profit Trend
+function renderDashboardChart(sales) {
+    const ctx = document.getElementById('salesProfitChart');
+    if (!ctx) return;
+
+    const dateMap = {};
+    sales.forEach(s => {
+        if (isDateInFilterRange(s.date, currentDashboardFilter)) {
+            const dateKey = new Date(s.date).toLocaleDateString('bn-BD', { month: 'short', day: 'numeric' });
+            let cost = 0;
+            s.items.forEach(i => {
+                let c = (i.costPrice || 0) * i.qty;
+                if (i.unit === "gm") c = ((i.costPrice || 0)/1000) * i.qty;
+                cost += c;
+            });
+            const profit = s.subtotal - cost;
+
+            if (!dateMap[dateKey]) {
+                dateMap[dateKey] = { sales: 0, profit: 0 };
+            }
+            dateMap[dateKey].sales += s.subtotal;
+            dateMap[dateKey].profit += profit;
+        }
+    });
+
+    const labels = Object.keys(dateMap);
+    const salesData = labels.map(l => dateMap[l].sales);
+    const profitData = labels.map(l => dateMap[l].profit);
+
+    if (dashboardChartInstance) {
+        dashboardChartInstance.destroy();
+    }
+
+    dashboardChartInstance = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: labels.length > 0 ? labels : ['আজ'],
+            datasets: [
+                {
+                    label: 'বিক্রি (৳)',
+                    data: salesData.length > 0 ? salesData : [0],
+                    borderColor: '#10B981',
+                    backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                    fill: true,
+                    tension: 0.3
+                },
+                {
+                    label: 'লাভ (৳)',
+                    data: profitData.length > 0 ? profitData : [0],
+                    borderColor: '#D4AF37',
+                    backgroundColor: 'rgba(212, 175, 55, 0.1)',
+                    fill: true,
+                    tension: 0.3
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { position: 'top' }
+            },
+            scales: {
+                y: { beginAtZero: true }
+            }
+        }
+    });
 }
 
 // Tab navigation handler
@@ -748,7 +910,7 @@ function switchTab(tabId, element) {
     document.querySelectorAll(".nav-item").forEach(nav => nav.classList.remove("active"));
     
     document.getElementById(tabId).classList.add("active");
-    element.classList.add("active");
+    if (element) element.classList.add("active");
 
     if (tabId === 'dashboard-tab' || tabId === 'reports-tab') refreshDashboardStats();
     if (tabId === 'products-tab') renderManageProducts();
@@ -757,12 +919,14 @@ function switchTab(tabId, element) {
     if (tabId === 'expenses-tab') loadExpenses();
 
     if (window.innerWidth <= 768) {
-        document.getElementById("sidebar").classList.remove("open");
+        const sidebar = document.getElementById("sidebar");
+        if (sidebar) sidebar.classList.remove("open");
     }
 }
 
 function toggleSidebar() {
-    document.getElementById("sidebar").classList.toggle("open");
+    const sidebar = document.getElementById("sidebar");
+    if (sidebar) sidebar.classList.toggle("open");
 }
 
 // --- Print & PDF Preview ---
