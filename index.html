@@ -8,6 +8,8 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Chart.js CDN for Dashboard Graph -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- html2pdf.js CDN for Invoice PDF Generation -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 </head>
 <body>
 
@@ -408,15 +410,15 @@
                 <div class="section-header">
                     <h2><i class="fa-solid fa-gear"></i> সেটিংস ও ডেটা ব্যাকআপ</h2>
                 </div>
-                <div class="pos-card" style="max-width: 600px; margin-bottom: 20px;">
-                    <h3>দোকান ও ইনভয়েস সেটিংস</h3>
+                <div class="pos-card" style="max-width: 650px; margin-bottom: 20px;">
+                    <h3><i class="fa-solid fa-store"></i> দোকানের তথ্য ও ক্যাশ মেমো কাস্টমাইজেশন</h3>
                     <div class="form-group" style="margin-top: 10px;">
                         <label>দোকানের নাম:</label>
-                        <input type="text" id="settingShopName" class="form-control" placeholder="দোকানের নাম">
+                        <input type="text" id="settingShopName" class="form-control" placeholder="দোকানের নাম লিখুন">
                     </div>
                     <div class="form-group" style="margin-top: 10px;">
                         <label>দোকানের ঠিকানা:</label>
-                        <input type="text" id="settingShopAddress" class="form-control" placeholder="ঠিকানা">
+                        <input type="text" id="settingShopAddress" class="form-control" placeholder="ঠিকানা লিখুন">
                     </div>
                     <div class="form-group" style="margin-top: 10px;">
                         <label>মোবাইল নম্বর:</label>
@@ -428,20 +430,28 @@
                     </div>
                     <div class="form-group" style="margin-top: 10px;">
                         <label>মালিকের নাম:</label>
-                        <input type="text" id="settingOwnerName" class="form-control" placeholder="মালিকের নাম">
+                        <input type="text" id="settingOwnerName" class="form-control" placeholder="মালিক বা ম্যানেজারের নাম">
                     </div>
                     <div class="form-group" style="margin-top: 10px;">
-                        <label>পদবি (যেমন: মালিক / ম্যানেজার):</label>
-                        <input type="text" id="settingOwnerRole" class="form-control" value="মালিক">
+                        <label>পদবি (Designation):</label>
+                        <input type="text" id="settingOwnerTitle" class="form-control" value="প্রোপাইটর">
                     </div>
                     <div class="form-group" style="margin-top: 10px;">
-                        <label>দোকানের লোগো (ছবি):</label>
+                        <label>ইনভয়েসের থিম কালার (Accent Color):</label>
+                        <input type="color" id="settingThemeColor" class="form-control" value="#0F2D1E" style="height:40px; cursor:pointer;">
+                    </div>
+                    <div class="form-group" style="margin-top: 10px;">
+                        <label>দোকানের লোগো (ছবি আপলোড):</label>
                         <input type="file" id="settingShopLogo" class="form-control" accept="image/*">
+                    </div>
+                    <div class="form-group" style="margin-top: 10px;">
+                        <label>স্বাক্ষরের ছবি (ঐচ্ছিক):</label>
+                        <input type="file" id="settingShopSign" class="form-control" accept="image/*">
                     </div>
                     <button class="btn btn-gold" style="margin-top: 15px;" onclick="saveSettingsData()">সেটিংস সংরক্ষণ করুন</button>
                 </div>
 
-                <div class="pos-card" style="max-width: 600px;">
+                <div class="pos-card" style="max-width: 650px;">
                     <h3>ডেটা ব্যাকআপ ও রিস্টোর</h3>
                     <p style="font-size: 0.85rem; color: #64748B; margin-bottom: 15px;">আপনার সমস্ত পণ্য, বিক্রি ও কাস্টমারের ডেটা JSON ফাইলে ব্যাকআপ রাখতে পারেন অথবা রিস্টোর করতে পারেন।</p>
                     <div style="display: flex; gap: 10px; flex-wrap: wrap;">
@@ -515,75 +525,74 @@
 
     <!-- Printable Invoice Modal View -->
     <div class="modal" id="printModal">
-        <div class="modal-content" style="max-width: 650px;">
+        <div class="modal-content" style="max-width: 750px;">
             <button class="close-modal" onclick="closePrintPreview()">&times;</button>
             
             <div id="printableArea" class="printable-invoice">
-                <!-- Header Logo & Info -->
-                <div class="inv-top-header">
-                    <img id="printShopLogo" src="" alt="Logo" class="inv-logo" style="display:none;">
-                    <h2 id="printShopName">সাইফুল স্টোর</h2>
+                <div class="inv-brand-header">
+                    <div id="printLogoContainer"></div>
+                    <h2 id="printShopName">বিসমিল্লাহ্‌ স্টোর</h2>
                     <p id="printShopAddress">পরশুরাম বাজার, ফেনী</p>
-                    <p><i class="fa-solid fa-phone"></i> <span id="printShopPhone">০১৬০৩১৪৬১৪৯</span></p>
+                    <p>মোবাইল: <span id="printShopPhone">০১৭১২-০০০০০০</span> | ইমেইল: <span id="printShopEmail">info@store.com</span></p>
+                    <div><span class="inv-title-badge" id="printInvoiceBadgeTitle">বিক্রি চালান / ক্যাশ মেমো</span></div>
                 </div>
 
-                <div class="inv-title-badge">বিক্রি চালান / ক্যাশ মেমো</div>
-
-                <!-- Meta Info Bar -->
-                <div class="inv-meta-bar">
-                    <div><i class="fa-solid fa-user"></i> কাস্টমার: <strong id="printCustName">সাধারণ ক্রেতা</strong></div>
-                    <div><i class="fa-solid fa-file-lines"></i> চালান নং: <strong id="printInvoiceNo">INV-1001</strong></div>
-                    <div><i class="fa-regular fa-calendar-days"></i> তারিখ: <strong id="printDate">-</strong></div>
+                <div class="invoice-meta">
+                    <div>
+                        <p><strong>কাস্টমার নাম:</strong> <span id="printCustName">-</span></p>
+                        <p><strong>মোবাইল:</strong> <span id="printCustPhone">-</span></p>
+                    </div>
+                    <div style="text-align: right;">
+                        <p><strong>চালান নং:</strong> <span id="printInvoiceNo">-</span></p>
+                        <p><strong>তারিখ:</strong> <span id="printDate">-</span></p>
+                        <p><strong>স্ট্যাটাস:</strong> <span id="printPaymentStatusTag" class="badge badge-success">পরিশোধিত</span></p>
+                    </div>
                 </div>
 
-                <!-- Items Table -->
                 <table class="print-table">
                     <thead>
                         <tr>
-                            <th style="width: 40px;">ক্রমিক</th>
+                            <th>ক্রমিক</th>
                             <th>পণ্যের বিবরণ</th>
-                            <th style="width: 90px;">পরিমাণ</th>
-                            <th style="width: 80px;">দর (৳)</th>
-                            <th style="width: 90px;">মোট (৳)</th>
+                            <th>পরিমাণ</th>
+                            <th>দর (৳)</th>
+                            <th>মোট (৳)</th>
                         </tr>
                     </thead>
                     <tbody id="printTableBody"></tbody>
                 </table>
 
-                <!-- Summary Section -->
-                <div class="print-summary-box">
-                    <div class="calc-row"><span>সর্বমোট:</span> <strong>৳ <span id="printSubtotal">0.00</span></strong></div>
-                    <div class="calc-row"><span>ছাড়:</span> <strong>৳ <span id="printDiscount">0.00</span></strong></div>
-                    <div class="calc-row"><span>জমা:</span> <strong>৳ <span id="printPaid">0.00</span></strong></div>
-                    <div class="calc-row print-due-row"><span>বাকি:</span> <strong>৳ <span id="printDue">0.00</span></strong></div>
+                <div class="print-summary">
+                    <div><span>সর্বমোট দাম:</span> <strong>৳ <span id="printSubtotal">0.00</span></strong></div>
+                    <div><span>ডিসকাউন্ট:</span> <strong>৳ <span id="printDiscount">0.00</span></strong></div>
+                    <div><span>জমা (Paid):</span> <strong>৳ <span id="printPaid">0.00</span></strong></div>
+                    <div class="print-due"><span>বাকি (Due):</span> <strong>৳ <span id="printDue">0.00</span></strong></div>
                 </div>
 
-                <!-- Thank you & Footer Note -->
-                <div class="inv-footer-note">
-                    <p>✨ ধন্যবাদ, আবার আসবেন! ✨</p>
-                    <small>Smart Dokan Manager দ্বারা প্রস্তুত</small>
+                <div class="inv-footer-signatures">
+                    <div>
+                        <p style="font-size: 0.75rem; color: #64748B;">গ্রাহকের স্বাক্ষর</p>
+                        <div style="height: 35px;"></div>
+                        <div class="signature-box">স্বাক্ষর</div>
+                    </div>
+                    <div style="text-align: right;">
+                        <div id="printSignContainer"></div>
+                        <p style="font-weight: bold; margin-top: 4px;" id="printOwnerName">সাইফুল ইসলাম</p>
+                        <p style="font-size: 0.75rem; color: #64748B;" id="printOwnerTitle">প্রোপাইটর</p>
+                    </div>
                 </div>
 
-                <!-- Bottom Contact & Signature -->
-                <div class="inv-bottom-grid">
-                    <div class="inv-contact-info">
-                        <p><i class="fa-solid fa-phone"></i> <span id="printFooterPhone">০১৬০৩১৪৬১৪৯</span></p>
-                        <p><i class="fa-solid fa-envelope"></i> <span id="printFooterEmail">saifulislamtareq6149@gmail.com</span></p>
-                        <p><i class="fa-solid fa-location-dot"></i> <span id="printFooterAddress">পরশুরাম বাজার, পরশুরাম, ফেনী</span></p>
-                    </div>
-                    <div class="inv-signature-area">
-                        <div class="sig-line"></div>
-                        <p id="printOwnerName">সাইফুল ইসলাম</p>
-                        <small id="printOwnerRole">মালিক</small>
-                    </div>
+                <div class="invoice-footer">
+                    <p>ধন্যবাদ, আবার আসবেন! আপনার সুস্বাস্থ্য কামনা করি।</p>
+                    <small>Smart Dokan Manager দ্বারা তৈরিকৃত সফটওয়্যার</small>
                 </div>
             </div>
 
             <div class="modal-actions" style="justify-content: space-between; flex-wrap: wrap; margin-top: 15px;">
-                <button class="btn btn-success" style="background-color: #25D366; color: white;" onclick="sendInvoiceToWhatsApp()"><i class="fa-brands fa-whatsapp"></i> WhatsApp এ পাঠান</button>
+                <button class="btn btn-success" style="background-color: #25D366; color: white;" onclick="shareInvoicePDFToWhatsApp()"><i class="fa-brands fa-whatsapp"></i> WhatsApp-এ PDF পাঠান</button>
                 <div style="display: flex; gap: 10px;">
                     <button class="btn btn-secondary" onclick="closePrintPreview()">বন্ধ করুন</button>
-                    <button class="btn btn-gold" onclick="triggerPrint()"><i class="fa-solid fa-print"></i> প্রিন্ট/PDF</button>
+                    <button class="btn btn-gold" onclick="triggerPrint()"><i class="fa-solid fa-print"></i> প্রিন্ট / PDF সেভ</button>
                 </div>
             </div>
         </div>
