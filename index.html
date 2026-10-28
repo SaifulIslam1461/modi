@@ -409,20 +409,36 @@
                     <h2><i class="fa-solid fa-gear"></i> সেটিংস ও ডেটা ব্যাকআপ</h2>
                 </div>
                 <div class="pos-card" style="max-width: 600px; margin-bottom: 20px;">
-                    <h3>দোকানের তথ্য সেটআপ</h3>
-                    <div class="form-group" style="margin-bottom: 10px;">
+                    <h3>দোকান ও ইনভয়েস সেটিংস</h3>
+                    <div class="form-group" style="margin-top: 10px;">
                         <label>দোকানের নাম:</label>
-                        <input type="text" id="settingShopName" class="form-control" placeholder="দোকানের নাম লিখুন">
+                        <input type="text" id="settingShopName" class="form-control" placeholder="দোকানের নাম">
                     </div>
-                    <div class="form-group" style="margin-bottom: 10px;">
+                    <div class="form-group" style="margin-top: 10px;">
                         <label>দোকানের ঠিকানা:</label>
-                        <input type="text" id="settingShopAddress" class="form-control" placeholder="ঠিকানা লিখুন">
+                        <input type="text" id="settingShopAddress" class="form-control" placeholder="ঠিকানা">
                     </div>
-                    <div class="form-group" style="margin-bottom: 15px;">
+                    <div class="form-group" style="margin-top: 10px;">
                         <label>মোবাইল নম্বর:</label>
                         <input type="text" id="settingShopPhone" class="form-control" placeholder="ফোন নম্বর">
                     </div>
-                    <button class="btn btn-gold" onclick="saveSettingsData()">সেটিংস সংরক্ষণ করুন</button>
+                    <div class="form-group" style="margin-top: 10px;">
+                        <label>ইমেইল ঠিকানা:</label>
+                        <input type="email" id="settingShopEmail" class="form-control" placeholder="email@example.com">
+                    </div>
+                    <div class="form-group" style="margin-top: 10px;">
+                        <label>মালিকের নাম:</label>
+                        <input type="text" id="settingOwnerName" class="form-control" placeholder="মালিকের নাম">
+                    </div>
+                    <div class="form-group" style="margin-top: 10px;">
+                        <label>পদবি (যেমন: মালিক / ম্যানেজার):</label>
+                        <input type="text" id="settingOwnerRole" class="form-control" value="মালিক">
+                    </div>
+                    <div class="form-group" style="margin-top: 10px;">
+                        <label>দোকানের লোগো (ছবি):</label>
+                        <input type="file" id="settingShopLogo" class="form-control" accept="image/*">
+                    </div>
+                    <button class="btn btn-gold" style="margin-top: 15px;" onclick="saveSettingsData()">সেটিংস সংরক্ষণ করুন</button>
                 </div>
 
                 <div class="pos-card" style="max-width: 600px;">
@@ -499,56 +515,71 @@
 
     <!-- Printable Invoice Modal View -->
     <div class="modal" id="printModal">
-        <div class="modal-content">
+        <div class="modal-content" style="max-width: 650px;">
             <button class="close-modal" onclick="closePrintPreview()">&times;</button>
             
             <div id="printableArea" class="printable-invoice">
-                <div class="invoice-header">
-                    <h2 id="printShopName">বিসমিল্লাহ্‌ স্টোর</h2>
+                <!-- Header Logo & Info -->
+                <div class="inv-top-header">
+                    <img id="printShopLogo" src="" alt="Logo" class="inv-logo" style="display:none;">
+                    <h2 id="printShopName">সাইফুল স্টোর</h2>
                     <p id="printShopAddress">পরশুরাম বাজার, ফেনী</p>
-                    <p>মোবাইল: <span id="printShopPhone">০১৭১২-০০০০০০</span></p>
-                    <hr>
-                    <h3>বিক্রি চালান / ক্যাশ মেমো</h3>
+                    <p><i class="fa-solid fa-phone"></i> <span id="printShopPhone">০১৬০৩১৪৬১৪৯</span></p>
                 </div>
 
-                <div class="invoice-meta">
-                    <div>
-                        <p><strong>কাস্টমার:</strong> <span id="printCustName">-</span></p>
-                        <p><strong>মোবাইল:</strong> <span id="printCustPhone">-</span></p>
-                    </div>
-                    <div style="text-align: right;">
-                        <p><strong>চালান নং:</strong> <span id="printInvoiceNo">-</span></p>
-                        <p><strong>তারিখ:</strong> <span id="printDate">-</span></p>
-                    </div>
+                <div class="inv-title-badge">বিক্রি চালান / ক্যাশ মেমো</div>
+
+                <!-- Meta Info Bar -->
+                <div class="inv-meta-bar">
+                    <div><i class="fa-solid fa-user"></i> কাস্টমার: <strong id="printCustName">সাধারণ ক্রেতা</strong></div>
+                    <div><i class="fa-solid fa-file-lines"></i> চালান নং: <strong id="printInvoiceNo">INV-1001</strong></div>
+                    <div><i class="fa-regular fa-calendar-days"></i> তারিখ: <strong id="printDate">-</strong></div>
                 </div>
 
+                <!-- Items Table -->
                 <table class="print-table">
                     <thead>
                         <tr>
-                            <th>ক্রমিক</th>
+                            <th style="width: 40px;">ক্রমিক</th>
                             <th>পণ্যের বিবরণ</th>
-                            <th>পরিমাণ</th>
-                            <th>দর (৳)</th>
-                            <th>মোট (৳)</th>
+                            <th style="width: 90px;">পরিমাণ</th>
+                            <th style="width: 80px;">দর (৳)</th>
+                            <th style="width: 90px;">মোট (৳)</th>
                         </tr>
                     </thead>
                     <tbody id="printTableBody"></tbody>
                 </table>
 
-                <div class="print-summary">
-                    <p><strong>সর্বমোট:</strong> ৳ <span id="printSubtotal">0</span></p>
-                    <p><strong>ডিসকাউন্ট:</strong> ৳ <span id="printDiscount">0</span></p>
-                    <p><strong>জমা:</strong> ৳ <span id="printPaid">0</span></p>
-                    <p class="print-due"><strong>বাকি:</strong> ৳ <span id="printDue">0</span></p>
+                <!-- Summary Section -->
+                <div class="print-summary-box">
+                    <div class="calc-row"><span>সর্বমোট:</span> <strong>৳ <span id="printSubtotal">0.00</span></strong></div>
+                    <div class="calc-row"><span>ছাড়:</span> <strong>৳ <span id="printDiscount">0.00</span></strong></div>
+                    <div class="calc-row"><span>জমা:</span> <strong>৳ <span id="printPaid">0.00</span></strong></div>
+                    <div class="calc-row print-due-row"><span>বাকি:</span> <strong>৳ <span id="printDue">0.00</span></strong></div>
                 </div>
 
-                <div class="invoice-footer">
-                    <p>ধন্যবাদ, আবার আসবেন!</p>
-                    <small>Smart Dokan Manager দ্বারা তৈরিকৃত</small>
+                <!-- Thank you & Footer Note -->
+                <div class="inv-footer-note">
+                    <p>✨ ধন্যবাদ, আবার আসবেন! ✨</p>
+                    <small>Smart Dokan Manager দ্বারা প্রস্তুত</small>
+                </div>
+
+                <!-- Bottom Contact & Signature -->
+                <div class="inv-bottom-grid">
+                    <div class="inv-contact-info">
+                        <p><i class="fa-solid fa-phone"></i> <span id="printFooterPhone">০১৬০৩১৪৬১৪৯</span></p>
+                        <p><i class="fa-solid fa-envelope"></i> <span id="printFooterEmail">saifulislamtareq6149@gmail.com</span></p>
+                        <p><i class="fa-solid fa-location-dot"></i> <span id="printFooterAddress">পরশুরাম বাজার, পরশুরাম, ফেনী</span></p>
+                    </div>
+                    <div class="inv-signature-area">
+                        <div class="sig-line"></div>
+                        <p id="printOwnerName">সাইফুল ইসলাম</p>
+                        <small id="printOwnerRole">মালিক</small>
+                    </div>
                 </div>
             </div>
 
-            <div class="modal-actions" style="justify-content: space-between; flex-wrap: wrap;">
+            <div class="modal-actions" style="justify-content: space-between; flex-wrap: wrap; margin-top: 15px;">
                 <button class="btn btn-success" style="background-color: #25D366; color: white;" onclick="sendInvoiceToWhatsApp()"><i class="fa-brands fa-whatsapp"></i> WhatsApp এ পাঠান</button>
                 <div style="display: flex; gap: 10px;">
                     <button class="btn btn-secondary" onclick="closePrintPreview()">বন্ধ করুন</button>
