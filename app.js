@@ -5,12 +5,12 @@ let db = null;
 
 // Initial Default Products for Seed
 const defaultProducts = [
-    { name: "আলু (Potato)", costPrice: 38, price: 45, stock: 50, unitOptions: ["kg", "gm"] },
-    { name: "দেশি পেঁয়াজ", costPrice: 75, price: 85, stock: 40, unitOptions: ["kg", "gm"] },
-    { name: "মিনিক্যাট চাল", costPrice: 65, price: 72, stock: 100, unitOptions: ["kg", "gm", "bag"] },
-    { name: "মসুর ডাল", costPrice: 115, price: 130, stock: 30, unitOptions: ["kg", "gm"] },
-    { name: "অলিম্পিক বিস্কুট", costPrice: 8, price: 10, stock: 60, unitOptions: ["pcs"] },
-    { name: "সয়াবিন তেল (১ লিটার)", costPrice: 150, price: 165, stock: 25, unitOptions: ["pcs", "litre"] }
+    { name: "আলু (Potato)", costPrice: 38, price: 45, stock: 50, unitOptions: ["kg", "gm"], image: "" },
+    { name: "দেশি পেঁয়াজ", costPrice: 75, price: 85, stock: 40, unitOptions: ["kg", "gm"], image: "" },
+    { name: "মিনিক্যাট চাল", costPrice: 65, price: 72, stock: 100, unitOptions: ["kg", "gm", "bag"], image: "" },
+    { name: "মসুর ডাল", costPrice: 115, price: 130, stock: 30, unitOptions: ["kg", "gm"], image: "" },
+    { name: "অলিম্পিক বিস্কুট", costPrice: 8, price: 10, stock: 60, unitOptions: ["pcs"], image: "" },
+    { name: "সয়াবিন তেল (১ লিটার)", costPrice: 150, price: 165, stock: 25, unitOptions: ["pcs", "litre"], image: "" }
 ];
 
 // App State
@@ -137,8 +137,12 @@ function renderProductCatalog(products) {
         const card = document.createElement("div");
         card.className = "product-item";
         card.onclick = () => addProductToActiveInvoice(p);
+        
+        let imgTag = p.image ? `<img src="${p.image}" class="product-thumb">` : `<i class="fa-solid fa-box-open" style="font-size: 1.8rem; color:#D4AF37; margin-bottom: 4px;"></i>`;
+
         card.innerHTML = `
-            <h4><i class="fa-solid fa-box-open" style="color:#D4AF37;"></i> ${p.name}</h4>
+            ${imgTag}
+            <h4>${p.name}</h4>
             <p><i class="fa-solid fa-tag"></i> ৳ ${p.price}</p>
             <small style="font-size:0.7rem; color:#64748B;"><i class="fa-solid fa-boxes-stacked"></i> স্টক: ${p.stock}</small>
         `;
@@ -161,13 +165,15 @@ function renderManageProducts() {
     const filtered = productsCache.filter(p => p.name.toLowerCase().includes(query));
 
     if (filtered.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; color:#94A3B8;">কোনো পণ্য পাওয়া যায়নি</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; color:#94A3B8;">কোনো পণ্য পাওয়া যায়নি</td></tr>`;
         return;
     }
 
     filtered.forEach(p => {
+        let imgTag = p.image ? `<img src="${p.image}" style="width:30px; height:30px; object-fit:cover; border-radius:4px;">` : `<i class="fa-solid fa-image" style="color:#CBD5E1;"></i>`;
         const tr = document.createElement("tr");
         tr.innerHTML = `
+            <td>${imgTag}</td>
             <td>${p.name}</td>
             <td>৳${p.costPrice || 0}</td>
             <td>৳${p.price}</td>
@@ -189,6 +195,7 @@ function openProductModal(id = null) {
     document.getElementById("modalProdPrice").value = "";
     document.getElementById("modalProdStock").value = "";
     document.getElementById("modalProdUnits").value = "kg, gm, pcs";
+    document.getElementById("modalProdImage").value = "";
     document.getElementById("productModalTitle").innerText = "নতুন পণ্য যোগ করুন";
 
     if (id) {
@@ -218,28 +225,55 @@ function saveProductData() {
     const stock = parseFloat(document.getElementById("modalProdStock").value) || 0;
     const unitsStr = document.getElementById("modalProdUnits").value;
     const unitOptions = unitsStr.split(',').map(u => u.trim()).filter(u => u);
+    const imageInput = document.getElementById("modalProdImage");
 
     if (!name || price <= 0) {
         alert("পণ্যের নাম এবং সঠিক বিক্রয়মূল্য দিন!");
         return;
     }
 
-    const transaction = db.transaction(["products"], "readwrite");
-    const store = transaction.objectStore("products");
+    const processSave = (imgBase64) => {
+        const transaction = db.transaction(["products"], "readwrite");
+        const store = transaction.objectStore("products");
 
-    const productObj = { name, costPrice, price, stock, unitOptions };
-    if (id) {
-        productObj.id = parseInt(id);
-        store.put(productObj);
-    } else {
-        store.add(productObj);
-    }
+        let existingImg = "";
+        if (id) {
+            const existing = productsCache.find(p => p.id === parseInt(id));
+            if (existing) existingImg = existing.image || "";
+        }
 
-    transaction.oncomplete = () => {
-        closeProductModal();
-        loadProductsFromDB();
-        refreshDashboardStats();
+        const productObj = { 
+            name, 
+            costPrice, 
+            price, 
+            stock, 
+            unitOptions, 
+            image: imgBase64 || existingImg 
+        };
+
+        if (id) {
+            productObj.id = parseInt(id);
+            store.put(productObj);
+        } else {
+            store.add(productObj);
+        }
+
+        transaction.oncomplete = () => {
+            closeProductModal();
+            loadProductsFromDB();
+            refreshDashboardStats();
+        };
     };
+
+    if (imageInput.files && imageInput.files[0]) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            processSave(e.target.result);
+        };
+        reader.readAsDataURL(imageInput.files[0]);
+    } else {
+        processSave(null);
+    }
 }
 
 function editProduct(id) {
@@ -949,6 +983,49 @@ function switchTab(tabId, element) {
 function toggleSidebar() {
     const sidebar = document.getElementById("sidebar");
     if (sidebar) sidebar.classList.toggle("open");
+}
+
+// --- WhatsApp Invoice Share ---
+function sendInvoiceToWhatsApp() {
+    const draft = getActiveDraft();
+    const phone = document.getElementById("printCustPhone").innerText.trim();
+    const custName = document.getElementById("printCustName").innerText.trim();
+    const invoiceNo = document.getElementById("printInvoiceNo").innerText.trim();
+    const subtotal = document.getElementById("printSubtotal").innerText;
+    const discount = document.getElementById("printDiscount").innerText;
+    const paid = document.getElementById("printPaid").innerText;
+    const due = document.getElementById("printDue").innerText;
+    const shopName = shopSettings.name;
+
+    let itemsText = "";
+    const rows = document.querySelectorAll("#printTableBody tr");
+    rows.forEach(r => {
+        const cols = r.querySelectorAll("td");
+        if (cols.length >= 5) {
+            itemsText += `- ${cols[1].innerText} (${cols[2].innerText}) x ${cols[3].innerText} = ৳${cols[4].innerText}\n`;
+        }
+    });
+
+    let msg = `🛒 *${shopName}*\n`;
+    msg += `📄 চালান নং: ${invoiceNo}\n`;
+    msg += `👤 কাস্টমার: ${custName}\n\n`;
+    msg += `*পণ্যসমূহ:*\n${itemsText}\n`;
+    msg += `-------------------\n`;
+    msg += `সর্বমোট: ৳${subtotal}\n`;
+    if (parseFloat(discount) > 0) msg += `ডিসকাউন্ট: ৳${discount}\n`;
+    msg += `জমা: ৳${paid}\n`;
+    msg += `বাকি: ৳${due}\n`;
+    msg += `-------------------\n`;
+    msg += `ধন্যবাদ, আবার আসবেন!`;
+
+    let cleanPhone = phone.replace(/[^0-9]/g, '');
+    if (cleanPhone.startsWith('0')) {
+        cleanPhone = '88' + cleanPhone;
+    }
+
+    const encodedMsg = encodeURIComponent(msg);
+    const whatsappUrl = cleanPhone.length > 5 ? `https://wa.me/${cleanPhone}?text=${encodedMsg}` : `https://wa.me/?text=${encodedMsg}`;
+    window.open(whatsappUrl, '_blank');
 }
 
 // --- Print & PDF Preview ---
