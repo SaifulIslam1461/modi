@@ -19,13 +19,15 @@ let draftInvoices = [];
 let activeDraftId = null;
 let invoiceCounter = 1001;
 let shopSettings = { 
-    name: "সাইফুল স্টোর", 
+    name: "বিসমিল্লাহ্‌ স্টোর", 
     address: "পরশুরাম বাজার, ফেনী", 
-    phone: "০১৬০৩১৪৬১৪৯", 
-    email: "saifulislamtareq6149@gmail.com",
+    phone: "০১৭১২-০০০০০০",
+    email: "",
     ownerName: "সাইফুল ইসলাম",
-    ownerRole: "মালিক",
-    logo: "" 
+    ownerTitle: "স্বত্বাধিকারী",
+    logo: "",
+    signature: "",
+    themeColor: "#0F2D1E"
 };
 
 // Initialize Database & App
@@ -74,7 +76,7 @@ function loadAppSettings() {
 
     request.onsuccess = () => {
         if (request.result) {
-            shopSettings = { ...shopSettings, ...request.result.data };
+            shopSettings = Object.assign(shopSettings, request.result.data);
         } else {
             saveAppSettingsToDB();
         }
@@ -90,42 +92,51 @@ function saveAppSettingsToDB() {
 
 function applySettingsToUI() {
     document.getElementById("headerShopName").innerText = shopSettings.name;
-    document.getElementById("headerShopSub").innerText = shopSettings.address;
-
     document.getElementById("settingShopName").value = shopSettings.name || "";
     document.getElementById("settingShopAddress").value = shopSettings.address || "";
     document.getElementById("settingShopPhone").value = shopSettings.phone || "";
     document.getElementById("settingShopEmail").value = shopSettings.email || "";
     document.getElementById("settingOwnerName").value = shopSettings.ownerName || "";
-    document.getElementById("settingOwnerRole").value = shopSettings.ownerRole || "মালিক";
+    document.getElementById("settingOwnerTitle").value = shopSettings.ownerTitle || "";
+    document.getElementById("settingThemeColor").value = shopSettings.themeColor || "#0F2D1E";
+
+    document.documentElement.style.setProperty('--invoice-theme', shopSettings.themeColor || "#0F2D1E");
 }
 
 function saveSettingsData() {
-    shopSettings.name = document.getElementById("settingShopName").value || "সাইফুল স্টোর";
+    shopSettings.name = document.getElementById("settingShopName").value || "Smart Dokan";
     shopSettings.address = document.getElementById("settingShopAddress").value || "";
     shopSettings.phone = document.getElementById("settingShopPhone").value || "";
     shopSettings.email = document.getElementById("settingShopEmail").value || "";
-    shopSettings.ownerName = document.getElementById("settingOwnerName").value || "";
-    shopSettings.ownerRole = document.getElementById("settingOwnerRole").value || "মালিক";
+    shopSettings.ownerName = document.getElementById("settingOwnerName").value || "স্বত্বাধিকারী";
+    shopSettings.ownerTitle = document.getElementById("settingOwnerTitle").value || "";
+    shopSettings.themeColor = document.getElementById("settingThemeColor").value || "#0F2D1E";
 
     const logoInput = document.getElementById("settingShopLogo");
+    const signInput = document.getElementById("settingOwnerSign");
 
-    const persist = (logoBase64) => {
-        if (logoBase64) shopSettings.logo = logoBase64;
+    const readFiles = async () => {
+        if (logoInput.files && logoInput.files[0]) {
+            shopSettings.logo = await fileToBase64(logoInput.files[0]);
+        }
+        if (signInput.files && signInput.files[0]) {
+            shopSettings.signature = await fileToBase64(signInput.files[0]);
+        }
         saveAppSettingsToDB();
         applySettingsToUI();
-        alert("সেটিংস সফলভাবে সংরক্ষিত হয়েছে!");
+        alert("ইনভয়েস ও দোকানের সেটিংস সফলভাবে সংরক্ষিত হয়েছে!");
     };
 
-    if (logoInput.files && logoInput.files[0]) {
+    readFiles();
+}
+
+function fileToBase64(file) {
+    return new Promise((resolve, reject) => {
         const reader = new FileReader();
-        reader.onload = function(e) {
-            persist(e.target.result);
-        };
-        reader.readAsDataURL(logoInput.files[0]);
-    } else {
-        persist(null);
-    }
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = error => reject(error);
+        reader.readAsDataURL(file);
+    });
 }
 
 // --- Products CRUD & DB ---
@@ -545,7 +556,7 @@ function confirmSale() {
 
     const saleRecord = {
         id: draft.id,
-        customerName: draft.customerName || "সাধারণ ক্রেতা",
+        customerName: draft.customerName || "সাধারণ কাস্টমার",
         customerPhone: draft.customerPhone || "N/A",
         items: draft.items,
         subtotal: finalTotal,
@@ -632,7 +643,7 @@ function loadCustomers() {
         const customerMap = {};
 
         sales.forEach(s => {
-            if (s.due > 0 && s.customerName !== "সাধারণ ক্রেতা") {
+            if (s.due > 0 && s.customerName !== "সাধারণ কাস্টমার") {
                 if (!customerMap[s.customerName]) {
                     customerMap[s.customerName] = { name: s.customerName, phone: s.customerPhone, due: 0 };
                 }
@@ -736,7 +747,7 @@ function deleteExpense(id) {
     }
 }
 
-// --- Advanced Dashboard Logic & Filters ---
+// --- Dashboard & Filters ---
 let currentDashboardFilter = 'today';
 let dashboardChartInstance = null;
 
@@ -813,7 +824,7 @@ function refreshDashboardStats() {
             totalDue += s.due;
             totalCollected += s.paid;
             totalRevenue += s.subtotal;
-            if (s.customerName && s.customerName !== "সাধারণ ক্রেতা") {
+            if (s.customerName && s.customerName !== "সাধারণ কাস্টমার") {
                 uniqueCustomers.add(s.customerName);
             }
 
@@ -902,7 +913,6 @@ function refreshDashboardStats() {
             document.getElementById("dashTotalStock").innerText = `${totalStockQty} টি`;
             document.getElementById("dashTotalStockValue").innerText = totalStockVal.toFixed(2);
 
-            // Render Low Stock Alert Banner
             const alertCard = document.getElementById("lowStockAlertSection");
             const chipsContainer = document.getElementById("lowStockChipsContainer");
             if (lowStockItems.length > 0) {
@@ -912,13 +922,11 @@ function refreshDashboardStats() {
                 alertCard.style.display = "none";
             }
 
-            // Render Interactive Chart
             renderDashboardChart(sales);
         };
     };
 }
 
-// Chart.js implementation for Sales & Profit Trend
 function renderDashboardChart(sales) {
     const ctx = document.getElementById('salesProfitChart');
     if (!ctx) return;
@@ -987,7 +995,7 @@ function renderDashboardChart(sales) {
     });
 }
 
-// Tab navigation handler
+// Navigation
 function switchTab(tabId, element) {
     document.querySelectorAll(".tab-content").forEach(tab => tab.classList.remove("active"));
     document.querySelectorAll(".nav-item").forEach(nav => nav.classList.remove("active"));
@@ -1012,67 +1020,25 @@ function toggleSidebar() {
     if (sidebar) sidebar.classList.toggle("open");
 }
 
-// --- WhatsApp Invoice Share ---
-function sendInvoiceToWhatsApp() {
-    const phone = document.getElementById("printShopPhone").innerText.trim();
-    const custName = document.getElementById("printCustName").innerText.trim();
-    const invoiceNo = document.getElementById("printInvoiceNo").innerText.trim();
-    const subtotal = document.getElementById("printSubtotal").innerText;
-    const discount = document.getElementById("printDiscount").innerText;
-    const paid = document.getElementById("printPaid").innerText;
-    const due = document.getElementById("printDue").innerText;
-    const shopName = shopSettings.name;
+// --- Printable Invoice Data Populator ---
+let currentActiveInvoiceObj = null;
 
-    let itemsText = "";
-    const rows = document.querySelectorAll("#printTableBody tr");
-    rows.forEach(r => {
-        const cols = r.querySelectorAll("td");
-        if (cols.length >= 5) {
-            itemsText += `- ${cols[1].innerText} (${cols[2].innerText}) x ${cols[3].innerText} = ৳${cols[4].innerText}\n`;
-        }
-    });
+function populatePrintData(invoiceData) {
+    currentActiveInvoiceObj = invoiceData;
+    const themeColor = shopSettings.themeColor || '#0F2D1E';
+    document.documentElement.style.setProperty('--invoice-theme', themeColor);
 
-    let msg = `🛒 *${shopName}*\n`;
-    msg += `📄 চালান নং: ${invoiceNo}\n`;
-    msg += `👤 কাস্টমার: ${custName}\n\n`;
-    msg += `*পণ্যসমূহ:*\n${itemsText}\n`;
-    msg += `-------------------\n`;
-    msg += `সর্বমোট: ৳${subtotal}\n`;
-    if (parseFloat(discount) > 0) msg += `ডিসকাউন্ট: ৳${discount}\n`;
-    msg += `জমা: ৳${paid}\n`;
-    msg += `বাকি: ৳${due}\n`;
-    msg += `-------------------\n`;
-    msg += `ধন্যবাদ, আবার আসবেন!`;
-
-    const draft = getActiveDraft();
-    let custPhone = draft && draft.customerPhone ? draft.customerPhone : "";
-    let cleanPhone = custPhone.replace(/[^0-9]/g, '');
-    if (cleanPhone.startsWith('0')) {
-        cleanPhone = '88' + cleanPhone;
+    document.getElementById("printShopName").innerText = shopSettings.name || "বিসমিল্লাহ্‌ স্টোর";
+    document.getElementById("printShopAddress").innerText = shopSettings.address || "";
+    document.getElementById("printShopPhone").innerText = shopSettings.phone || "";
+    
+    const emailWrapper = document.getElementById("printShopEmailWrapper");
+    if (shopSettings.email) {
+        document.getElementById("printShopEmail").innerText = shopSettings.email;
+        emailWrapper.style.display = "inline";
+    } else {
+        emailWrapper.style.display = "none";
     }
-
-    const encodedMsg = encodeURIComponent(msg);
-    const whatsappUrl = cleanPhone.length > 5 ? `https://wa.me/${cleanPhone}?text=${encodedMsg}` : `https://wa.me/?text=${encodedMsg}`;
-    window.open(whatsappUrl, '_blank');
-}
-
-// --- Print & PDF Preview ---
-function openPrintPreview() {
-    const draft = getActiveDraft();
-    if (!draft || draft.items.length === 0) {
-        alert("প্রিন্ট দেখার জন্য চালানে অন্তত একটি পণ্য যোগ করুন!");
-        return;
-    }
-
-    // Apply Shop Settings to Invoice Preview
-    document.getElementById("printShopName").innerText = shopSettings.name;
-    document.getElementById("printShopAddress").innerText = shopSettings.address;
-    document.getElementById("printShopPhone").innerText = shopSettings.phone;
-    document.getElementById("printFooterPhone").innerText = shopSettings.phone;
-    document.getElementById("printFooterEmail").innerText = shopSettings.email || "N/A";
-    document.getElementById("printFooterAddress").innerText = shopSettings.address;
-    document.getElementById("printOwnerName").innerText = shopSettings.ownerName;
-    document.getElementById("printOwnerRole").innerText = shopSettings.ownerRole;
 
     const logoImg = document.getElementById("printShopLogo");
     if (shopSettings.logo) {
@@ -1082,23 +1048,24 @@ function openPrintPreview() {
         logoImg.style.display = "none";
     }
 
-    document.getElementById("printInvoiceNo").innerText = draft.id;
-    document.getElementById("printDate").innerText = new Date().toLocaleDateString('bn-BD');
-    document.getElementById("printCustName").innerText = draft.customerName ? draft.customerName : "সাধারণ ক্রেতা";
+    document.getElementById("printInvoiceNo").innerText = invoiceData.id;
+    document.getElementById("printDate").innerText = new Date(invoiceData.date || Date.now()).toLocaleDateString('bn-BD');
+    document.getElementById("printCustName").innerText = invoiceData.customerName || "সাধারণ কাস্টমার";
+    document.getElementById("printCustPhone").innerText = invoiceData.customerPhone || "N/A";
 
     const printTbody = document.getElementById("printTableBody");
     printTbody.innerHTML = "";
 
-    let total = 0;
-    draft.items.forEach((item, index) => {
+    let rawTotal = 0;
+    invoiceData.items.forEach((item, index) => {
         let itemTotal = item.price * item.qty;
         if (item.unit === "gm") itemTotal = (item.price / 1000) * item.qty;
-        total += itemTotal;
+        rawTotal += itemTotal;
 
         const tr = document.createElement("tr");
         tr.innerHTML = `
             <td>${index + 1}</td>
-            <td style="text-align: left; padding-left: 8px;">${item.name}</td>
+            <td>${item.name}</td>
             <td>${item.qty} ${item.unit}</td>
             <td>৳${item.price}</td>
             <td>৳${itemTotal.toFixed(2)}</td>
@@ -1106,16 +1073,134 @@ function openPrintPreview() {
         printTbody.appendChild(tr);
     });
 
-    const discount = draft.discount || 0;
-    let finalTotal = total - discount;
-    if (finalTotal < 0) finalTotal = 0;
-    const due = finalTotal - draft.paid;
+    const discount = invoiceData.discount || 0;
+    let netTotal = rawTotal - discount;
+    if (netTotal < 0) netTotal = 0;
+    const due = invoiceData.due !== undefined ? invoiceData.due : (netTotal - (invoiceData.paid || 0));
 
-    document.getElementById("printSubtotal").innerText = total.toFixed(2);
+    document.getElementById("printSubtotal").innerText = rawTotal.toFixed(2);
     document.getElementById("printDiscount").innerText = discount.toFixed(2);
-    document.getElementById("printPaid").innerText = draft.paid.toFixed(2);
+    document.getElementById("printNetTotal").innerText = netTotal.toFixed(2);
+    document.getElementById("printPaid").innerText = (invoiceData.paid || 0).toFixed(2);
     document.getElementById("printDue").innerText = due > 0 ? due.toFixed(2) : "0.00";
 
+    const badge = document.getElementById("printPaymentStatusBadge");
+    if (due <= 0) {
+        badge.innerText = "পরিশোধিত (Paid)";
+        badge.className = "invoice-status-badge status-paid";
+    } else if ((invoiceData.paid || 0) > 0) {
+        badge.innerText = "আংশিক বাকি (Partial)";
+        badge.className = "invoice-status-badge status-partial";
+    } else {
+        badge.innerText = "সম্পূর্ণ বাকি (Due)";
+        badge.className = "invoice-status-badge status-due";
+    }
+
+    document.getElementById("printOwnerName").innerText = shopSettings.ownerName || "মালিক";
+    document.getElementById("printOwnerTitle").innerText = shopSettings.ownerTitle || "স্বত্বাধিকারী";
+
+    const signImg = document.getElementById("printOwnerSignImg");
+    if (shopSettings.signature) {
+        signImg.src = shopSettings.signature;
+        signImg.style.display = "block";
+    } else {
+        signImg.style.display = "none";
+    }
+}
+
+// --- Dynamic WhatsApp PDF Sharing ---
+async function shareInvoicePDFToWhatsApp() {
+    if (!currentActiveInvoiceObj) {
+        alert("চালানের তথ্য পাওয়া যায়নি!");
+        return;
+    }
+
+    const element = document.getElementById("printableArea");
+    const rawInvoiceId = currentActiveInvoiceObj.id || "INV-1001";
+    const pdfFilename = `Invoice_${rawInvoiceId}.pdf`;
+    const custPhone = (currentActiveInvoiceObj.customerPhone || "").trim();
+
+    // Format phone number to international format (Bangladesh +880)
+    let formattedPhone = custPhone.replace(/[^0-9]/g, '');
+    if (formattedPhone.startsWith('0')) {
+        formattedPhone = '88' + formattedPhone;
+    }
+
+    const shareMsgText = `আসসালামু আলাইকুম। ${shopSettings.name || 'দোকান'} থেকে আপনার ক্রয়ের চালানটি PDF আকারে পাঠানো হলো। ধন্যবাদ।`;
+
+    const opt = {
+        margin: 0.3,
+        filename: pdfFilename,
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { scale: 2, useCORS: true },
+        jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' }
+    };
+
+    try {
+        // Generate PDF Blob
+        const pdfBlob = await html2pdf().set(opt).from(element).output('blob');
+        const pdfFile = new File([pdfBlob], pdfFilename, { type: 'application/pdf' });
+
+        // Web Share API Check
+        if (navigator.canShare && navigator.canShare({ files: [pdfFile] })) {
+            await navigator.share({
+                title: `${pdfFilename}`,
+                text: shareMsgText,
+                files: [pdfFile]
+            });
+        } else {
+            // Fallback: Download PDF & Open WhatsApp text flow with prompt
+            const blobUrl = URL.createObjectURL(pdfBlob);
+            const downloadLink = document.createElement('a');
+            downloadLink.href = blobUrl;
+            downloadLink.download = pdfFilename;
+            document.body.appendChild(downloadLink);
+            downloadLink.click();
+            document.body.removeChild(downloadLink);
+
+            const whatsappUrl = formattedPhone.length > 5 ? 
+                `https://wa.me/${formattedPhone}?text=${encodeURIComponent(shareMsgText)}` : 
+                `https://wa.me/?text=${encodeURIComponent(shareMsgText)}`;
+
+            alert(`আপনার PDF চালানটি ডাউনলোড হয়েছে (${pdfFilename})। এখন WhatsApp নির্বাচন করে ফাইলটি অ্যাটাচ করে পাঠিয়ে দিন।`);
+            window.open(whatsappUrl, '_blank');
+        }
+    } catch (err) {
+        console.error("PDF Share Error:", err);
+        alert("PDF শেয়ার করতে সমস্যা হয়েছে! চালান ডাউনলোড বাটনে চাপ দিয়ে সংরক্ষণ করুন।");
+    }
+}
+
+function openPrintPreview() {
+    const draft = getActiveDraft();
+    if (!draft || draft.items.length === 0) {
+        alert("প্রিন্ট দেখার জন্য চালানে অন্তত একটি পণ্য যোগ করুন!");
+        return;
+    }
+
+    let subtotal = 0;
+    draft.items.forEach(item => {
+        if (item.unit === "gm") subtotal += (item.price / 1000) * item.qty;
+        else subtotal += item.price * item.qty;
+    });
+
+    const discount = draft.discount || 0;
+    let netTotal = subtotal - discount;
+    if (finalTotal < 0) finalTotal = 0;
+    const due = netTotal - draft.paid;
+
+    const previewObj = {
+        id: draft.id,
+        customerName: draft.customerName || "সাধারণ কাস্টমার",
+        customerPhone: draft.customerPhone || "N/A",
+        items: draft.items,
+        discount: discount,
+        paid: draft.paid,
+        due: due > 0 ? due : 0,
+        date: new Date().toISOString()
+    };
+
+    populatePrintData(previewObj);
     document.getElementById("printModal").style.display = "flex";
 }
 
@@ -1135,57 +1220,12 @@ function reprintInvoice(id) {
     req.onsuccess = () => {
         const s = req.result;
         if (!s) return;
-
-        document.getElementById("printShopName").innerText = shopSettings.name;
-        document.getElementById("printShopAddress").innerText = shopSettings.address;
-        document.getElementById("printShopPhone").innerText = shopSettings.phone;
-        document.getElementById("printFooterPhone").innerText = shopSettings.phone;
-        document.getElementById("printFooterEmail").innerText = shopSettings.email || "N/A";
-        document.getElementById("printFooterAddress").innerText = shopSettings.address;
-        document.getElementById("printOwnerName").innerText = shopSettings.ownerName;
-        document.getElementById("printOwnerRole").innerText = shopSettings.ownerRole;
-
-        const logoImg = document.getElementById("printShopLogo");
-        if (shopSettings.logo) {
-            logoImg.src = shopSettings.logo;
-            logoImg.style.display = "block";
-        } else {
-            logoImg.style.display = "none";
-        }
-
-        document.getElementById("printInvoiceNo").innerText = s.id;
-        document.getElementById("printDate").innerText = new Date(s.date).toLocaleDateString('bn-BD');
-        document.getElementById("printCustName").innerText = s.customerName;
-
-        const printTbody = document.getElementById("printTableBody");
-        printTbody.innerHTML = "";
-
-        let rawTotal = 0;
-        s.items.forEach((item, index) => {
-            let itemTotal = item.price * item.qty;
-            if (item.unit === "gm") itemTotal = (item.price / 1000) * item.qty;
-            rawTotal += itemTotal;
-            const tr = document.createElement("tr");
-            tr.innerHTML = `
-                <td>${index + 1}</td>
-                <td style="text-align: left; padding-left: 8px;">${item.name}</td>
-                <td>${item.qty} ${item.unit}</td>
-                <td>৳${item.price}</td>
-                <td>৳${itemTotal.toFixed(2)}</td>
-            `;
-            printTbody.appendChild(tr);
-        });
-
-        document.getElementById("printSubtotal").innerText = rawTotal.toFixed(2);
-        document.getElementById("printDiscount").innerText = (s.discount || 0).toFixed(2);
-        document.getElementById("printPaid").innerText = s.paid.toFixed(2);
-        document.getElementById("printDue").innerText = s.due.toFixed(2);
-
+        populatePrintData(s);
         document.getElementById("printModal").style.display = "flex";
     };
 }
 
-// --- Backup and Restore ---
+// Backup and Restore
 function exportDataBackup() {
     const tx = db.transaction(["products", "sales", "expenses", "settings"], "readonly");
     const backupData = {};
