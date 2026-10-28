@@ -138,9 +138,9 @@ function renderProductCatalog(products) {
         card.className = "product-item";
         card.onclick = () => addProductToActiveInvoice(p);
         card.innerHTML = `
-            <h4>${p.name}</h4>
-            <p>৳ ${p.price}</p>
-            <small style="font-size:0.7rem; color:#64748B;">স্টক: ${p.stock}</small>
+            <h4><i class="fa-solid fa-box-open" style="color:#D4AF37;"></i> ${p.name}</h4>
+            <p><i class="fa-solid fa-tag"></i> ৳ ${p.price}</p>
+            <small style="font-size:0.7rem; color:#64748B;"><i class="fa-solid fa-boxes-stacked"></i> স্টক: ${p.stock}</small>
         `;
         grid.appendChild(card);
     });
@@ -266,6 +266,7 @@ function addNewDraftInvoice() {
         customerName: "",
         customerPhone: "",
         items: [],
+        discount: 0,
         paid: 0
     };
 
@@ -325,9 +326,10 @@ function loadActiveInvoiceData() {
     const draft = getActiveDraft();
     if (!draft) return;
 
-    document.getElementById("activeInvoiceNo").innerText = `চালান #${draft.id}`;
+    document.getElementById("activeInvoiceNo").innerHTML = `<i class="fa-solid fa-receipt"></i> চালান #${draft.id}`;
     document.getElementById("custName").value = draft.customerName;
     document.getElementById("custPhone").value = draft.customerPhone;
+    document.getElementById("discountAmount").value = draft.discount || 0;
     document.getElementById("paidAmount").value = draft.paid;
 
     renderInvoiceItems();
@@ -386,7 +388,7 @@ function renderInvoiceItems() {
 
         tr.innerHTML = `
             <td>${item.name}</td>
-            <td>৳${item.price}</td>
+            <td><input type="number" step="any" value="${item.price}" class="price-input" onchange="updateItemPrice(${idx}, this.value)"></td>
             <td><input type="number" min="0.1" step="any" value="${item.qty}" class="qty-input" onchange="updateItemQty(${idx}, this.value)"></td>
             <td>
                 <select class="unit-select" onchange="updateItemUnit(${idx}, this.value)">
@@ -407,6 +409,15 @@ function updateItemQty(index, val) {
     const q = parseFloat(val);
     if (draft && !isNaN(q) && q > 0) {
         draft.items[index].qty = q;
+        renderInvoiceItems();
+    }
+}
+
+function updateItemPrice(index, val) {
+    const draft = getActiveDraft();
+    const p = parseFloat(val);
+    if (draft && !isNaN(p) && p >= 0) {
+        draft.items[index].price = p;
         renderInvoiceItems();
     }
 }
@@ -440,9 +451,14 @@ function calculateTotals() {
         }
     });
 
+    const discount = parseFloat(document.getElementById("discountAmount").value) || 0;
+    draft.discount = discount;
     const paid = parseFloat(document.getElementById("paidAmount").value) || 0;
     draft.paid = paid;
-    const due = subtotal - paid;
+
+    let finalTotal = subtotal - discount;
+    if (finalTotal < 0) finalTotal = 0;
+    const due = finalTotal - paid;
 
     document.getElementById("subTotal").innerText = subtotal.toFixed(2);
     document.getElementById("dueAmount").innerText = due > 0 ? due.toFixed(2) : "0.00";
@@ -462,14 +478,20 @@ function confirmSale() {
         else subtotal += item.price * item.qty;
     });
 
+    let finalTotal = subtotal - (draft.discount || 0);
+    if (finalTotal < 0) finalTotal = 0;
+    const dueAmount = finalTotal - draft.paid > 0 ? finalTotal - draft.paid : 0;
+
     const saleRecord = {
         id: draft.id,
         customerName: draft.customerName || "সাধারণ কাস্টমার",
         customerPhone: draft.customerPhone || "N/A",
         items: draft.items,
-        subtotal: subtotal,
+        subtotal: finalTotal,
+        rawSubtotal: subtotal,
+        discount: draft.discount || 0,
         paid: draft.paid,
-        due: subtotal - draft.paid > 0 ? subtotal - draft.paid : 0,
+        due: dueAmount,
         date: new Date().toISOString(),
         status: "confirmed"
     };
@@ -962,8 +984,13 @@ function openPrintPreview() {
         printTbody.appendChild(tr);
     });
 
-    const due = total - draft.paid;
+    const discount = draft.discount || 0;
+    let finalTotal = total - discount;
+    if (finalTotal < 0) finalTotal = 0;
+    const due = finalTotal - draft.paid;
+
     document.getElementById("printSubtotal").innerText = total.toFixed(2);
+    document.getElementById("printDiscount").innerText = discount.toFixed(2);
     document.getElementById("printPaid").innerText = draft.paid.toFixed(2);
     document.getElementById("printDue").innerText = due > 0 ? due.toFixed(2) : "0.00";
 
@@ -995,9 +1022,11 @@ function reprintInvoice(id) {
         const printTbody = document.getElementById("printTableBody");
         printTbody.innerHTML = "";
 
+        let rawTotal = 0;
         s.items.forEach((item, index) => {
             let itemTotal = item.price * item.qty;
             if (item.unit === "gm") itemTotal = (item.price / 1000) * item.qty;
+            rawTotal += itemTotal;
             const tr = document.createElement("tr");
             tr.innerHTML = `
                 <td>${index + 1}</td>
@@ -1009,7 +1038,8 @@ function reprintInvoice(id) {
             printTbody.appendChild(tr);
         });
 
-        document.getElementById("printSubtotal").innerText = s.subtotal.toFixed(2);
+        document.getElementById("printSubtotal").innerText = rawTotal.toFixed(2);
+        document.getElementById("printDiscount").innerText = (s.discount || 0).toFixed(2);
         document.getElementById("printPaid").innerText = s.paid.toFixed(2);
         document.getElementById("printDue").innerText = s.due.toFixed(2);
 
