@@ -17,7 +17,7 @@
     margin: 0;
     padding: 0;
     box-sizing: border-box;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif, 'SolaimanLipi';
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif, 'SolaimanLipi', 'Hind Siliguri';
 }
 
 body {
@@ -136,7 +136,7 @@ body {
     color: var(--bg-primary);
 }
 
-/* --- Premium Dashboard Specific Styles --- */
+/* --- Enhanced Dashboard & Filter Styles --- */
 .dashboard-welcome-banner {
     background: linear-gradient(135deg, var(--bg-primary), var(--bg-secondary));
     color: white;
@@ -170,6 +170,97 @@ body {
     font-size: 0.9rem;
     color: var(--accent-gold);
     border: 1px solid rgba(212, 175, 55, 0.3);
+}
+
+.dashboard-filter-bar {
+    background: white;
+    padding: 12px 18px;
+    border-radius: 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: var(--card-shadow);
+    margin-bottom: 20px;
+    border: 1px solid var(--border-color);
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.filter-group {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.filter-btn {
+    background: var(--bg-light);
+    border: 1px solid var(--border-color);
+    padding: 6px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--text-dark);
+    transition: 0.2s;
+}
+
+.filter-btn:hover, .filter-btn.active {
+    background-color: var(--bg-primary);
+    color: var(--accent-gold);
+    border-color: var(--accent-gold);
+}
+
+.custom-date-inputs {
+    display: none;
+    align-items: center;
+    gap: 6px;
+}
+
+.custom-date-inputs.show {
+    display: flex;
+}
+
+.custom-date-inputs input {
+    padding: 4px 8px;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    font-size: 0.8rem;
+}
+
+/* Low Stock Alert Panel */
+.low-stock-alert-card {
+    background: #FEF2F2;
+    border: 1px solid #FCA5A5;
+    border-left: 5px solid var(--danger-color);
+    padding: 15px;
+    border-radius: 10px;
+    margin-bottom: 20px;
+}
+
+.low-stock-alert-card h3 {
+    color: #991B1B;
+    font-size: 1rem;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.low-stock-items-chips {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.stock-chip {
+    background: white;
+    border: 1px solid #F87171;
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-size: 0.8rem;
+    color: #B91C1C;
+    font-weight: 600;
 }
 
 /* Dashboard Stats Grid */
@@ -228,7 +319,7 @@ body {
 }
 
 /* Quick Shortcuts Card */
-.dashboard-shortcuts-card, .dashboard-recent-card {
+.dashboard-shortcuts-card, .dashboard-recent-card, .dashboard-chart-card {
     background: white;
     padding: 20px;
     border-radius: 10px;
@@ -237,7 +328,7 @@ body {
     border: 1px solid var(--border-color);
 }
 
-.dashboard-shortcuts-card h3, .dashboard-recent-card h3 {
+.dashboard-shortcuts-card h3, .dashboard-recent-card h3, .dashboard-chart-card h3 {
     font-size: 1.05rem;
     color: var(--bg-primary);
     margin-bottom: 15px;
@@ -279,7 +370,18 @@ body {
     transform: translateY(-2px);
 }
 
-/* --- End Dashboard Specific Styles --- */
+.chart-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.chart-container {
+    position: relative;
+    height: 280px;
+    width: 100%;
+}
 
 .draft-tabs-container {
     display: flex;
