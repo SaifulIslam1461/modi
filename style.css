@@ -567,8 +567,8 @@ body {
     font-size: 0.8rem;
 }
 
-.qty-input {
-    width: 60px;
+.qty-input, .price-input {
+    width: 75px;
     padding: 4px;
     border: 1px solid var(--border-color);
     border-radius: 4px;
