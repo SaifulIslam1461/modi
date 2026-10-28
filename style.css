@@ -136,6 +136,151 @@ body {
     color: var(--bg-primary);
 }
 
+/* --- Premium Dashboard Specific Styles --- */
+.dashboard-welcome-banner {
+    background: linear-gradient(135deg, var(--bg-primary), var(--bg-secondary));
+    color: white;
+    padding: 20px;
+    border-radius: 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    box-shadow: var(--card-shadow);
+    border-left: 5px solid var(--accent-gold);
+    flex-wrap: wrap;
+    gap: 15px;
+}
+
+.dashboard-welcome-banner h2 {
+    color: white;
+    font-size: 1.4rem;
+    margin-bottom: 5px;
+}
+
+.dashboard-welcome-banner p {
+    font-size: 0.85rem;
+    color: #CBD5E1;
+}
+
+.current-date-badge {
+    background: rgba(255, 255, 255, 0.15);
+    padding: 8px 14px;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    color: var(--accent-gold);
+    border: 1px solid rgba(212, 175, 55, 0.3);
+}
+
+/* Dashboard Stats Grid */
+.dashboard-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.stat-card {
+    background: white;
+    padding: 18px;
+    border-radius: 10px;
+    box-shadow: var(--card-shadow);
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    border: 1px solid var(--border-color);
+    transition: transform 0.2s;
+}
+
+.stat-card:hover {
+    transform: translateY(-2px);
+    border-color: var(--accent-gold);
+}
+
+.stat-card.stat-sales { border-left: 5px solid var(--success-color); }
+.stat-card.stat-profit { border-left: 5px solid var(--accent-gold); }
+.stat-card.stat-expense { border-left: 5px solid var(--danger-color); }
+.stat-card.stat-due { border-left: 5px solid var(--warning-color); }
+.stat-card.stat-stock { border-left: 5px solid var(--bg-primary); }
+
+.stat-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 10px;
+    background: var(--bg-light);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    color: var(--bg-primary);
+}
+
+.stat-info p {
+    font-size: 0.8rem;
+    color: #64748B;
+    margin-bottom: 2px;
+}
+
+.stat-info h3 {
+    font-size: 1.15rem;
+    color: var(--bg-primary);
+    font-weight: 700;
+}
+
+/* Quick Shortcuts Card */
+.dashboard-shortcuts-card, .dashboard-recent-card {
+    background: white;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: var(--card-shadow);
+    margin-bottom: 20px;
+    border: 1px solid var(--border-color);
+}
+
+.dashboard-shortcuts-card h3, .dashboard-recent-card h3 {
+    font-size: 1.05rem;
+    color: var(--bg-primary);
+    margin-bottom: 15px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.shortcuts-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 12px;
+}
+
+.shortcut-btn {
+    background: var(--bg-light);
+    border: 1px solid var(--border-color);
+    padding: 12px;
+    border-radius: 8px;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    transition: 0.2s;
+    font-weight: 600;
+    font-size: 0.85rem;
+    color: var(--bg-primary);
+}
+
+.shortcut-btn i {
+    font-size: 1.3rem;
+    color: var(--accent-gold);
+}
+
+.shortcut-btn:hover {
+    background: #FFFDF0;
+    border-color: var(--accent-gold);
+    transform: translateY(-2px);
+}
+
+/* --- End Dashboard Specific Styles --- */
+
 .draft-tabs-container {
     display: flex;
     gap: 8px;
@@ -407,40 +552,6 @@ body {
     padding: 20px;
     border-radius: 8px;
     box-shadow: var(--card-shadow);
-}
-
-/* Dashboard Grid */
-.dashboard-stats-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 15px;
-    margin-bottom: 20px;
-}
-
-.stat-card {
-    background: white;
-    padding: 15px;
-    border-radius: 8px;
-    box-shadow: var(--card-shadow);
-    display: flex;
-    align-items: center;
-    gap: 15px;
-    border-left: 4px solid var(--accent-gold);
-}
-
-.stat-card i {
-    font-size: 2rem;
-    color: var(--bg-primary);
-}
-
-.stat-card p {
-    font-size: 0.8rem;
-    color: #64748B;
-}
-
-.stat-card h3 {
-    font-size: 1.1rem;
-    color: var(--bg-primary);
 }
 
 /* Modal & Printing Styles */
