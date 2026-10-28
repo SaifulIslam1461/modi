@@ -68,7 +68,7 @@ function loadAppSettings() {
         if (request.result) {
             shopSettings = request.result.data;
         } else {
-            saveAppSettingsToDB(); // Save defaults
+            saveAppSettingsToDB();
         }
         applySettingsToUI();
     };
@@ -110,7 +110,6 @@ function loadProductsFromDB() {
     request.onsuccess = () => {
         productsCache = request.result;
         if (productsCache.length === 0) {
-            // Seed default products
             seedDefaultProducts();
         } else {
             renderProductCatalog(productsCache);
@@ -645,14 +644,20 @@ function deleteExpense(id) {
     }
 }
 
-// Dashboard & Reports stats
+// Dashboard & Reports stats (Updated with Live DB Stats & Recent Sales)
 function refreshDashboardStats() {
+    // Set formatted current date in Bangla locale
+    const options = { year: 'numeric', month: 'long', day: 'numeric', weekday: 'long' };
+    const dateStr = new Date().toLocaleDateString('bn-BD', options);
+    const dateElem = document.getElementById("dashDateText");
+    if (dateElem) dateElem.innerText = dateStr;
+
     const tx = db.transaction(["sales", "expenses", "products"], "readonly");
     
-    // Sales stats
     tx.objectStore("sales").getAll().onsuccess = (e) => {
         const sales = e.target.result;
         let todaySales = 0;
+        let todayProfit = 0;
         let totalDue = 0;
         let totalRevenue = 0;
         let totalCost = 0;
@@ -661,18 +666,49 @@ function refreshDashboardStats() {
         sales.forEach(s => {
             totalDue += s.due;
             totalRevenue += s.subtotal;
+
+            let saleCost = 0;
+            s.items.forEach(item => {
+                let itemCost = (item.costPrice || 0) * item.qty;
+                if (item.unit === "gm") itemCost = ((item.costPrice || 0) / 1000) * item.qty;
+                saleCost += itemCost;
+                totalCost += itemCost;
+            });
+
             if (new Date(s.date).toDateString() === todayStr) {
                 todaySales += s.subtotal;
+                todayProfit += (s.subtotal - saleCost);
             }
-            s.items.forEach(item => {
-                totalCost += (item.costPrice || 0) * item.qty;
-            });
         });
 
         document.getElementById("dashTodaySales").innerText = todaySales.toFixed(2);
         document.getElementById("dashTotalDue").innerText = totalDue.toFixed(2);
         document.getElementById("repTotalInvoices").innerText = `${sales.length} টি`;
         document.getElementById("repTotalSales").innerText = totalRevenue.toFixed(2);
+
+        // Render Recent 5 Sales Table on Dashboard
+        const recentTbody = document.getElementById("dashRecentSalesTableBody");
+        if (recentTbody) {
+            recentTbody.innerHTML = "";
+            if (sales.length === 0) {
+                recentTbody.innerHTML = `<tr><td colspan="6" style="text-align:center; color:#94A3B8;">কোনো বিক্রির তথ্য নেই</td></tr>`;
+            } else {
+                const recentSales = [...sales].reverse().slice(0, 5);
+                recentSales.forEach(s => {
+                    const dStr = new Date(s.date).toLocaleDateString('bn-BD');
+                    const tr = document.createElement("tr");
+                    tr.innerHTML = `
+                        <td>${s.id}</td>
+                        <td>${dStr}</td>
+                        <td>${s.customerName}</td>
+                        <td>৳${s.subtotal.toFixed(2)}</td>
+                        <td>৳${s.paid.toFixed(2)}</td>
+                        <td style="color:var(--danger-color);">৳${s.due.toFixed(2)}</td>
+                    `;
+                    recentTbody.appendChild(tr);
+                });
+            }
+        }
 
         // Expenses stats
         tx.objectStore("expenses").getAll().onsuccess = (ev) => {
@@ -692,6 +728,9 @@ function refreshDashboardStats() {
 
             const netProfit = totalRevenue - totalCost - totalExp;
             document.getElementById("repTotalProfit").innerText = netProfit.toFixed(2);
+
+            const todayNetProfit = todayProfit - todayExp;
+            document.getElementById("dashTodayProfit").innerText = todayNetProfit.toFixed(2);
         };
 
         // Stock count
