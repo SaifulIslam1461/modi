@@ -666,7 +666,7 @@ body {
     box-shadow: var(--card-shadow);
 }
 
-/* Modal & Printing Styles */
+/* Modal Styles */
 .modal {
     display: none;
     position: fixed;
@@ -698,58 +698,158 @@ body {
     cursor: pointer;
 }
 
+/* --- Professional Invoice & Print Layout Styles --- */
 .printable-invoice {
-    font-size: 0.85rem;
-    border: 1px solid var(--border-color);
-    padding: 15px;
-    background: #fff;
+    background: #ffffff;
+    border: 2px solid #0F2D1E;
+    border-radius: 10px;
+    padding: 20px;
+    color: #1E293B;
+    font-size: 0.9rem;
+    position: relative;
 }
 
-.invoice-header {
+.inv-top-header {
     text-align: center;
-    margin-bottom: 10px;
+    margin-bottom: 12px;
 }
 
-.invoice-meta {
+.inv-logo {
+    width: 65px;
+    height: 65px;
+    object-fit: cover;
+    border-radius: 50%;
+    border: 2px solid #D4AF37;
+    margin: 0 auto 6px auto;
+    display: block;
+}
+
+.inv-top-header h2 {
+    font-size: 1.4rem;
+    color: #0F2D1E;
+    margin-bottom: 2px;
+}
+
+.inv-top-header p {
+    font-size: 0.85rem;
+    color: #475569;
+}
+
+.inv-title-badge {
+    background-color: #0F2D1E;
+    color: #D4AF37;
+    text-align: center;
+    padding: 6px 15px;
+    border-radius: 20px;
+    font-weight: bold;
+    font-size: 0.95rem;
+    max-width: 250px;
+    margin: 12px auto;
+    border: 1px solid #D4AF37;
+}
+
+.inv-meta-bar {
     display: flex;
     justify-content: space-between;
-    margin-bottom: 10px;
-    font-size: 0.8rem;
+    background: #F8FAFC;
+    border: 1px solid #E2E8F0;
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-size: 0.82rem;
+    margin-bottom: 15px;
+    flex-wrap: wrap;
+    gap: 8px;
 }
 
 .print-table {
     width: 100%;
     border-collapse: collapse;
-    margin-bottom: 10px;
+    margin-bottom: 15px;
 }
 
-.print-table th, .print-table td {
+.print-table th {
+    background-color: #0F2D1E;
+    color: #FFFFFF;
+    border: 1px solid #0F2D1E;
+    padding: 6px;
+    font-size: 0.85rem;
+    text-align: center;
+}
+
+.print-table td {
     border: 1px solid #CBD5E1;
-    padding: 4px;
+    padding: 6px;
+    font-size: 0.85rem;
     text-align: center;
 }
 
-.print-summary {
-    text-align: right;
-    margin-top: 10px;
+.print-summary-box {
+    width: 260px;
+    margin-left: auto;
+    background: #F8FAFC;
+    border: 1px solid #E2E8F0;
+    border-radius: 6px;
+    padding: 8px 12px;
+    margin-bottom: 15px;
 }
 
-.print-due {
-    color: var(--danger-color);
-}
-
-.invoice-footer {
-    text-align: center;
-    margin-top: 15px;
-    border-top: 1px solid #CBD5E1;
-    padding-top: 5px;
-}
-
-.modal-actions {
-    margin-top: 15px;
+.print-summary-box .calc-row {
     display: flex;
-    justify-content: flex-end;
-    gap: 10px;
+    justify-content: space-between;
+    font-size: 0.88rem;
+    margin-bottom: 4px;
+}
+
+.print-due-row {
+    background-color: #0F2D1E;
+    color: #D4AF37;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-weight: bold;
+    margin-top: 4px;
+}
+
+.inv-footer-note {
+    text-align: center;
+    margin: 15px 0;
+    border-top: 1px dashed #CBD5E1;
+    border-bottom: 1px dashed #CBD5E1;
+    padding: 6px 0;
+}
+
+.inv-footer-note p {
+    color: #0F2D1E;
+    font-weight: bold;
+    font-size: 0.9rem;
+}
+
+.inv-footer-note small {
+    color: #64748B;
+    font-size: 0.75rem;
+}
+
+.inv-bottom-grid {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    margin-top: 10px;
+    font-size: 0.8rem;
+    color: #475569;
+}
+
+.inv-contact-info p {
+    margin-bottom: 3px;
+}
+
+.inv-signature-area {
+    text-align: center;
+    min-width: 120px;
+}
+
+.sig-line {
+    border-top: 1px solid #475569;
+    margin-bottom: 4px;
+    width: 130px;
 }
 
 @media (max-width: 768px) {
@@ -790,5 +890,6 @@ body {
         left: 0;
         top: 0;
         width: 100%;
+        border: none;
     }
 }
