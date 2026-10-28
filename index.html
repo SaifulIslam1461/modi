@@ -6,6 +6,8 @@
     <title>Smart Dokan Manager</title>
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Chart.js CDN for Dashboard Graph -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
 
@@ -131,34 +133,58 @@
                 <div class="dashboard-welcome-banner">
                     <div class="welcome-text">
                         <h2><i class="fa-solid fa-chart-line"></i> ড্যাশবোর্ড ওভারভিউ</h2>
-                        <p>আপনার দোকানের আজকের ব্যবসার লাইভ সারসংক্ষেপ</p>
+                        <p>আপনার দোকানের লাইভ ব্যবসা ও হিসাব-নিকাশ</p>
                     </div>
                     <div class="current-date-badge" id="currentDateDisplay">
                         <i class="fa-regular fa-calendar-days"></i> <span id="dashDateText">তারিখ লোড হচ্ছে...</span>
                     </div>
                 </div>
 
-                <!-- Summary Stat Cards -->
+                <!-- Date & Time Filter Bar -->
+                <div class="dashboard-filter-bar">
+                    <div class="filter-group">
+                        <span style="font-size: 0.85rem; font-weight: 600; color: #475569;"><i class="fa-solid fa-filter"></i> সময় ফিল্টার:</span>
+                        <button class="filter-btn active" onclick="setDashboardFilter('today', this)">আজ</button>
+                        <button class="filter-btn" onclick="setDashboardFilter('yesterday', this)">গতকাল</button>
+                        <button class="filter-btn" onclick="setDashboardFilter('week', this)">এই সপ্তাহ</button>
+                        <button class="filter-btn" onclick="setDashboardFilter('month', this)">এই মাস</button>
+                        <button class="filter-btn" onclick="setDashboardFilter('year', this)">এই বছর</button>
+                        <button class="filter-btn" onclick="setDashboardFilter('custom', this)">কাস্টম তারিখ</button>
+                    </div>
+                    <div class="custom-date-inputs" id="customDateBox">
+                        <input type="date" id="filterStartDate" onchange="applyCustomDateFilter()">
+                        <span>থেকে</span>
+                        <input type="date" id="filterEndDate" onchange="applyCustomDateFilter()">
+                    </div>
+                </div>
+
+                <!-- Low Stock Alert Warning (Dynamic) -->
+                <div class="low-stock-alert-card" id="lowStockAlertSection" style="display: none;">
+                    <h3><i class="fa-solid fa-triangle-exclamation"></i> কম স্টকের সতর্কতা (১০টির কম অবশিষ্ট)</h3>
+                    <div class="low-stock-items-chips" id="lowStockChipsContainer"></div>
+                </div>
+
+                <!-- Summary Stat Cards (8 Essential Cards) -->
                 <div class="dashboard-stats-grid">
                     <div class="stat-card stat-sales">
                         <div class="stat-icon"><i class="fa-solid fa-bangladeshi-taka-sign"></i></div>
                         <div class="stat-info">
-                            <p>আজকের বিক্রি</p>
-                            <h3>৳ <span id="dashTodaySales">0.00</span></h3>
+                            <p>নির্বাচিত সময়ের বিক্রি</p>
+                            <h3>৳ <span id="dashPeriodSales">0.00</span></h3>
                         </div>
                     </div>
                     <div class="stat-card stat-profit">
                         <div class="stat-icon"><i class="fa-solid fa-chart-pie"></i></div>
                         <div class="stat-info">
-                            <p>আজকের আনুমানিক লাভ</p>
-                            <h3>৳ <span id="dashTodayProfit">0.00</span></h3>
+                            <p>আনুমানিক নিট লাভ</p>
+                            <h3>৳ <span id="dashPeriodNetProfit">0.00</span></h3>
                         </div>
                     </div>
                     <div class="stat-card stat-expense">
                         <div class="stat-icon"><i class="fa-solid fa-wallet"></i></div>
                         <div class="stat-info">
-                            <p>আজকের খরচ</p>
-                            <h3>৳ <span id="dashTodayExpense">0.00</span></h3>
+                            <p>দোকান খরচ</p>
+                            <h3>৳ <span id="dashPeriodExpense">0.00</span></h3>
                         </div>
                     </div>
                     <div class="stat-card stat-due">
@@ -168,11 +194,32 @@
                             <h3>৳ <span id="dashTotalDue">0.00</span></h3>
                         </div>
                     </div>
+                    <div class="stat-card stat-sales" style="border-left-color: #3B82F6;">
+                        <div class="stat-icon" style="color: #3B82F6;"><i class="fa-solid fa-hand-holding-dollar"></i></div>
+                        <div class="stat-info">
+                            <p>বাকি আদায় / জমা</p>
+                            <h3>৳ <span id="dashPeriodCollected">0.00</span></h3>
+                        </div>
+                    </div>
+                    <div class="stat-card stat-due" style="border-left-color: #8B5CF6;">
+                        <div class="stat-icon" style="color: #8B5CF6;"><i class="fa-solid fa-users"></i></div>
+                        <div class="stat-info">
+                            <p>মোট গ্রাহক সংখ্যা</p>
+                            <h3 id="dashTotalCustomers">0 জন</h3>
+                        </div>
+                    </div>
                     <div class="stat-card stat-stock">
                         <div class="stat-icon"><i class="fa-solid fa-box-archive"></i></div>
                         <div class="stat-info">
                             <p>মোট পণ্যের স্টক</p>
                             <h3 id="dashTotalStock">0 টি</h3>
+                        </div>
+                    </div>
+                    <div class="stat-card stat-profit" style="border-left-color: #065F46;">
+                        <div class="stat-icon" style="color: #065F46;"><i class="fa-solid fa-warehouse"></i></div>
+                        <div class="stat-info">
+                            <p>স্টকের মোট ক্রয়মূল্য</p>
+                            <h3>৳ <span id="dashTotalStockValue">0.00</span></h3>
                         </div>
                     </div>
                 </div>
@@ -187,7 +234,15 @@
                         </button>
                         <button class="shortcut-btn" onclick="openProductModal()">
                             <i class="fa-solid fa-boxes-stacked"></i>
-                            <span>পণ্য যোগ করুন</span>
+                            <span>পণ্য যোগ</span>
+                        </button>
+                        <button class="shortcut-btn" onclick="switchTab('customers-tab', document.querySelectorAll('.nav-item')[4])">
+                            <i class="fa-solid fa-hand-holding-dollar"></i>
+                            <span>বাকি আদায়</span>
+                        </button>
+                        <button class="shortcut-btn" onclick="openExpenseModal()">
+                            <i class="fa-solid fa-wallet"></i>
+                            <span>নতুন খরচ</span>
                         </button>
                         <button class="shortcut-btn" onclick="switchTab('invoices-tab', document.querySelectorAll('.nav-item')[3])">
                             <i class="fa-solid fa-file-invoice"></i>
@@ -200,9 +255,20 @@
                     </div>
                 </div>
 
-                <!-- Recent Sales Table -->
+                <!-- Interactive Sales & Profit Trend Chart -->
+                <div class="dashboard-chart-card">
+                    <div class="chart-header">
+                        <h3><i class="fa-solid fa-chart-area"></i> বিক্রয় ও লাভের গ্রাফ</h3>
+                        <span style="font-size: 0.8rem; color: #64748B;" id="chartSubtitle">সাম্প্রতিক দিনের ট্রেন্ড</span>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="salesProfitChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Recent Transactions Table -->
                 <div class="dashboard-recent-card">
-                    <h3><i class="fa-solid fa-clock-rotate-left"></i> সাম্প্রতিক ৫টি বিক্রি</h3>
+                    <h3><i class="fa-solid fa-clock-rotate-left"></i> সাম্প্রতিক লেনদেন তালিকা</h3>
                     <div class="table-responsive">
                         <table class="items-table" style="background: white;">
                             <thead>
@@ -213,10 +279,11 @@
                                     <th>মোট (৳)</th>
                                     <th>জমা (৳)</th>
                                     <th>বাকি (৳)</th>
+                                    <th>স্ট্যাটাস</th>
                                 </tr>
                             </thead>
                             <tbody id="dashRecentSalesTableBody">
-                                <tr><td colspan="6" style="text-align:center; color:#94A3B8;">কোনো তথ্য পাওয়া যায়নি</td></tr>
+                                <tr><td colspan="7" style="text-align:center; color:#94A3B8;">কোনো তথ্য পাওয়া যায়নি</td></tr>
                             </tbody>
                         </table>
                     </div>
